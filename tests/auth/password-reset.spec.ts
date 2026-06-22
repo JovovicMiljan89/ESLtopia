@@ -5,22 +5,16 @@
 // the new password works (and the old one no longer does).
 //
 // The recovery link is generated via the admin API (generateLink) instead of
-// reading the email from Mailtrap — this is race-free under parallel runs and
-// doesn't depend on inbox state. Each test uses its own user to stay isolated.
-// Users are removed by the global teardown.
+// reading an email — race-free under parallel runs and doesn't depend on inbox
+// state. Each test uses its own user. Users are removed by the global teardown.
 
 import { test, expect, type Page } from '@playwright/test';
-import { createConfirmedUser, generateRecoveryLink } from '../helpers/cleanup';
+import { createConfirmedUser, generateRecoveryLink, uniqueEmail } from '../helpers/cleanup';
 
 const OLD_PASSWORD = 'OldPass123!';
 const NEW_PASSWORD = 'NewPass456!';
 const BASE_URL = process.env.BASE_URL ?? 'https://esltopia.vercel.app';
 
-function uniqueEmail(tag: string): string {
-  return `reset-${tag}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.test`;
-}
-
-// Create a confirmed user and land the browser on the "Set a new password" screen.
 async function startRecovery(page: Page, email: string): Promise<void> {
   await createConfirmedUser({ email, password: OLD_PASSWORD, role: 'teacher' });
   const link = await generateRecoveryLink(email, BASE_URL);
@@ -29,10 +23,9 @@ async function startRecovery(page: Page, email: string): Promise<void> {
 }
 
 test('set a new password, then log in with it (old one stops working)', async ({ page }) => {
-  const email = uniqueEmail('done');
+  const email = uniqueEmail('pw-done');
   await startRecovery(page, email);
 
-  // Set the new password.
   await page.getByPlaceholder('Minimum 8 characters').fill(NEW_PASSWORD);
   await page.getByPlaceholder('Repeat password').fill(NEW_PASSWORD);
   await page.getByRole('button', { name: 'Set new password' }).click();
@@ -55,19 +48,18 @@ test('set a new password, then log in with it (old one stops working)', async ({
 });
 
 test('mismatched passwords → "Passwords do not match."', async ({ page }) => {
-  await startRecovery(page, uniqueEmail('mismatch'));
+  await startRecovery(page, uniqueEmail('pw-mismatch'));
 
   await page.getByPlaceholder('Minimum 8 characters').fill(NEW_PASSWORD);
   await page.getByPlaceholder('Repeat password').fill('Different123!');
   await page.getByRole('button', { name: 'Set new password' }).click();
 
   await expect(page.getByText('Passwords do not match.')).toBeVisible();
-  // Still on the reset screen — not submitted.
   await expect(page.getByText('Set a new password')).toBeVisible();
 });
 
 test('weak password → validation error', async ({ page }) => {
-  await startRecovery(page, uniqueEmail('weak'));
+  await startRecovery(page, uniqueEmail('pw-weak'));
 
   await page.getByPlaceholder('Minimum 8 characters').fill('weak');
   await page.getByPlaceholder('Repeat password').fill('weak');

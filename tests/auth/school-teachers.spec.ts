@@ -16,7 +16,9 @@ import {
   getProfile,
   getAccessToken,
   setProfileStatus,
+  uniqueEmail,
 } from '../helpers/cleanup';
+import { loginToApp } from '../helpers/ui';
 
 // create-teacher sends an invite email (Supabase → Mailtrap), whose sandbox
 // rate-limits sends — retry to ride out transient "Error sending invite email".
@@ -27,11 +29,6 @@ const PASSWORD = 'Test1234!';
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? '';
 const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY ?? '';
 
-function uniqueEmail(tag: string): string {
-  return `st-${tag}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.test`;
-}
-
-// Invoke an edge function as a given user; returns { status, body }.
 async function invoke(
   request: APIRequestContext,
   fn: string,
@@ -47,7 +44,7 @@ async function invoke(
     data: payload,
     failOnStatusCode: false,
   });
-  let body: any = null;
+  let body: unknown = null;
   try { body = await res.json(); } catch { /* ignore */ }
   return { status: res.status(), body };
 }
@@ -59,19 +56,19 @@ if (!ENABLED) {
 } else {
   test.describe('school creates & manages teachers', () => {
     test('school can create a teacher (pending, linked to the school)', async ({ request }) => {
-      const schoolEmail = uniqueEmail('school');
+      const schoolEmail = uniqueEmail('st-school');
       await createConfirmedUser({ email: schoolEmail, password: PASSWORD, role: 'school' });
       const school = await getProfile(schoolEmail);
       const token = await getAccessToken(schoolEmail, PASSWORD);
 
-      const teacherEmail = uniqueEmail('teacher');
+      const teacherEmail = uniqueEmail('st-teacher');
       const { status, body } = await invoke(request, 'create-teacher', token, {
         email: teacherEmail,
         firstName: 'New',
         lastName: 'Teacher',
       });
       expect(status, JSON.stringify(body)).toBe(200);
-      expect(body.ok).toBe(true);
+      expect((body as { ok: boolean }).ok).toBe(true);
 
       const teacher = await getProfile(teacherEmail);
       expect(teacher?.role).toBe('teacher');
@@ -80,28 +77,27 @@ if (!ENABLED) {
     });
 
     test('a teacher account cannot create teachers (403)', async ({ request }) => {
-      const teacherEmail = uniqueEmail('plain-teacher');
+      const teacherEmail = uniqueEmail('st-plain-teacher');
       await createConfirmedUser({ email: teacherEmail, password: PASSWORD, role: 'teacher' });
       const token = await getAccessToken(teacherEmail, PASSWORD);
 
       const { status } = await invoke(request, 'create-teacher', token, {
-        email: uniqueEmail('victim'),
+        email: uniqueEmail('st-victim'),
         firstName: 'X',
         lastName: 'Y',
       });
       expect(status).toBe(403);
     });
 
-    test('a school cannot manage another school’s teacher (403)', async ({ request }) => {
-      const schoolAEmail = uniqueEmail('schoolA');
-      const schoolBEmail = uniqueEmail('schoolB');
+    test("a school cannot manage another school's teacher (403)", async ({ request }) => {
+      const schoolAEmail = uniqueEmail('st-schoolA');
+      const schoolBEmail = uniqueEmail('st-schoolB');
       await createConfirmedUser({ email: schoolAEmail, password: PASSWORD, role: 'school' });
       await createConfirmedUser({ email: schoolBEmail, password: PASSWORD, role: 'school' });
       const tokenA = await getAccessToken(schoolAEmail, PASSWORD);
       const tokenB = await getAccessToken(schoolBEmail, PASSWORD);
 
-      // School A creates a teacher.
-      const teacherEmail = uniqueEmail('A-teacher');
+      const teacherEmail = uniqueEmail('st-A-teacher');
       await invoke(request, 'create-teacher', tokenA, {
         email: teacherEmail, firstName: 'A', lastName: 'Teacher',
       });
@@ -112,16 +108,15 @@ if (!ENABLED) {
         teacherId: teacher?.id, action: 'remove',
       });
       expect(status).toBe(403);
-      // Teacher still exists.
       expect(await getProfile(teacherEmail)).not.toBeNull();
     });
 
     test('deactivate then reactivate toggles teacher status', async ({ request }) => {
-      const schoolEmail = uniqueEmail('school-toggle');
+      const schoolEmail = uniqueEmail('st-school-toggle');
       await createConfirmedUser({ email: schoolEmail, password: PASSWORD, role: 'school' });
       const token = await getAccessToken(schoolEmail, PASSWORD);
 
-      const teacherEmail = uniqueEmail('toggle-teacher');
+      const teacherEmail = uniqueEmail('st-toggle-teacher');
       await invoke(request, 'create-teacher', token, {
         email: teacherEmail, firstName: 'T', lastName: 'Toggle',
       });
@@ -137,22 +132,16 @@ if (!ENABLED) {
     });
 
     test('school sees the Employees tab but not the global Admin tab', async ({ page }) => {
-      const schoolEmail = uniqueEmail('school-ui');
+      const schoolEmail = uniqueEmail('st-school-ui');
       await createConfirmedUser({ email: schoolEmail, password: PASSWORD, role: 'school' });
 
-      await page.goto('/');
-      await page.getByPlaceholder('your@email.com').fill(schoolEmail);
-      await page.getByPlaceholder('Your password').fill(PASSWORD);
-      await page.locator('button[type="submit"].gen-btn').click();
-      await expect(page.getByRole('button', { name: /get started/i })).toBeVisible({ timeout: 15_000 });
-      await page.getByRole('button', { name: /get started/i }).click();
-
+      await loginToApp(page, schoolEmail, PASSWORD);
       await expect(page.locator('button.tab', { hasText: 'Employees' })).toBeVisible();
       await expect(page.locator('button.tab', { hasText: 'Admin' })).toHaveCount(0);
     });
 
     test('a pending teacher cannot log in', async ({ page }) => {
-      const teacherEmail = uniqueEmail('pending-login');
+      const teacherEmail = uniqueEmail('st-pending-login');
       await createConfirmedUser({ email: teacherEmail, password: PASSWORD, role: 'teacher' });
       await setProfileStatus(teacherEmail, 'pending');
 

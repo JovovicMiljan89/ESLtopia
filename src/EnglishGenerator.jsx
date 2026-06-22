@@ -3666,7 +3666,12 @@ export default function EnglishGenerator() {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
         const profile = await fetchProfile(session.user.id);
-        if (profile) setCurrentUser({ ...session.user, ...profile });
+        if (profile && profile.status !== 'pending' && profile.status !== 'inactive') {
+          setCurrentUser({ ...session.user, ...profile });
+        } else if (profile) {
+          // Lingering session for a pending/deactivated account — sign it out.
+          await supabase.auth.signOut();
+        }
       }
       setAuthLoaded(true);
     });

@@ -1,13 +1,9 @@
 // tests/helpers/cleanup.ts
 //
-// Deletes the throwaway users that the auth E2E test creates in Supabase.
-//
-// Deleting users requires the SERVICE ROLE key (admin), not the anon key.
-// Supabase dashboard → Project Settings → API → "service_role" secret.
-// Put it in .env.test.local as SUPABASE_SERVICE_ROLE_KEY=...
-//
-// Without that key the cleanup is skipped (with a warning) so the test
-// suite still passes — it just won't remove the created users.
+// Admin helpers for E2E tests: create/confirm/delete Supabase users, read
+// profiles, and generate recovery links. Requires the SERVICE ROLE key (admin),
+// not the anon key. Add SUPABASE_SERVICE_ROLE_KEY to .env.test.local.
+// Without it, cleanup is skipped (with a warning) so tests still pass.
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
@@ -15,7 +11,6 @@ const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? '';
 const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY ?? '';
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
 
-// Test addresses always use this domain (see registration.spec.ts).
 const TEST_EMAIL_DOMAIN = '@example.test';
 
 let admin: SupabaseClient | null = null;
@@ -27,6 +22,21 @@ function adminClient(): SupabaseClient | null {
     });
   }
   return admin;
+}
+
+/** Generate a unique test email. All test addresses use @example.test so teardown can purge them. */
+export function uniqueEmail(prefix: string): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}${TEST_EMAIL_DOMAIN}`;
+}
+
+/** Poll fn() every 500 ms until it returns a non-null value or we exhaust retries. */
+async function poll<T>(fn: () => Promise<T | null>, retries = 10): Promise<T | null> {
+  for (let i = 0; i < retries; i++) {
+    const result = await fn();
+    if (result !== null) return result;
+    await new Promise(r => setTimeout(r, 500));
+  }
+  return null;
 }
 
 /**
@@ -69,27 +79,6 @@ export async function createConfirmedUser(opts: {
   }
 }
 
-/**
- * Read a profile's role by email, using the service role (bypasses RLS).
- * Polls briefly because the profile is created by a trigger on user insert.
- */
-export async function getProfileRole(email: string): Promise<string | null> {
-  const client = adminClient();
-  if (!client) {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY is required to read profiles — add it to .env.test.local');
-  }
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const { data } = await client
-      .from('profiles')
-      .select('role')
-      .eq('email', email.toLowerCase())
-      .maybeSingle();
-    if (data) return (data as { role: string | null }).role ?? null;
-    await new Promise((r) => setTimeout(r, 500));
-  }
-  return null;
-}
-
 export interface ProfileRow {
   id: string;
   role: string | null;
@@ -97,20 +86,18 @@ export interface ProfileRow {
   school_id: string | null;
 }
 
-/** Read a profile (role/status/school_id) by email via the service role. Polls briefly. */
+/** Read a profile (role/status/school_id) by email via the service role. Polls briefly for the trigger to fire. */
 export async function getProfile(email: string): Promise<ProfileRow | null> {
   const client = adminClient();
   if (!client) throw new Error('SUPABASE_SERVICE_ROLE_KEY is required to read profiles');
-  for (let attempt = 0; attempt < 10; attempt++) {
+  return poll(async () => {
     const { data } = await client
       .from('profiles')
       .select('id, role, status, school_id')
       .eq('email', email.toLowerCase())
       .maybeSingle();
-    if (data) return data as ProfileRow;
-    await new Promise((r) => setTimeout(r, 500));
-  }
-  return null;
+    return (data as ProfileRow) ?? null;
+  });
 }
 
 /** Mark a user's email as confirmed (simulates clicking the confirmation link). */
@@ -149,8 +136,8 @@ export async function getAccessToken(email: string, password: string): Promise<s
 
 /**
  * Generate a password-recovery action link via the admin API, without sending
- * or reading an email. Visiting the returned link in the browser establishes a
- * recovery session, which makes the app show the "Set a new password" screen.
+ * or reading an email. Visiting the returned link establishes a recovery session,
+ * which makes the app show the "Set a new password" screen.
  */
 export async function generateRecoveryLink(email: string, redirectTo: string): Promise<string> {
   const client = adminClient();
@@ -174,9 +161,9 @@ export async function generateRecoveryLink(email: string, redirectTo: string): P
  * Delete every user whose email ends with the test domain.
  * Safe in production: real users never use the `.test` TLD.
  *
- * NOTE: this purges ALL test users, so if the suite ever grows to run
- * multiple auth tests in parallel, switch to deleting only the addresses
- * created by the current run to avoid races.
+ * NOTE: purges ALL test users — if the suite grows to run multiple auth tests
+ * in parallel across runs, switch to deleting only addresses from the current
+ * run to avoid races.
  */
 export async function deleteTestUsers(): Promise<void> {
   const client = adminClient();
@@ -189,7 +176,6 @@ export async function deleteTestUsers(): Promise<void> {
   }
 
   let deleted = 0;
-  // Admin list is paginated; walk pages until exhausted.
   for (let page = 1; page <= 100; page++) {
     const { data, error } = await client.auth.admin.listUsers({ page, perPage: 1000 });
     if (error) {
@@ -199,9 +185,7 @@ export async function deleteTestUsers(): Promise<void> {
     const users = data?.users ?? [];
     if (users.length === 0) break;
 
-    const testUsers = users.filter((u) =>
-      (u.email ?? '').toLowerCase().endsWith(TEST_EMAIL_DOMAIN),
-    );
+    const testUsers = users.filter(u => (u.email ?? '').toLowerCase().endsWith(TEST_EMAIL_DOMAIN));
     for (const u of testUsers) {
       const { error: delErr } = await client.auth.admin.deleteUser(u.id);
       if (delErr) {
@@ -211,7 +195,7 @@ export async function deleteTestUsers(): Promise<void> {
       }
     }
 
-    if (users.length < 1000) break; // last page
+    if (users.length < 1000) break;
   }
 
   console.log(`[cleanup] removed ${deleted} test user(s) (${TEST_EMAIL_DOMAIN})`);
