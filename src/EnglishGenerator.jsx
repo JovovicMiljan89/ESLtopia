@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from './supabaseClient.js';
+import Logo from './Logo.jsx';
 
 const storage = {
   async get(key) {
@@ -62,19 +63,7 @@ const styles = `
   }
 
   .logo-mark {
-    width: 56px;
-    height: 56px;
-    background: linear-gradient(135deg, #f76707 0%, #e64980 100%);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     flex-shrink: 0;
-    font-family: 'Nunito', sans-serif;
-    font-size: 24px;
-    font-weight: 900;
-    color: #fff;
-    box-shadow: 0 8px 24px rgba(247, 103, 7, 0.38);
   }
 
   .header-text h1 {
@@ -162,7 +151,7 @@ const styles = `
     /* ── Header ── */
     .header { gap: 12px; margin-bottom: 20px; }
     .header-text { min-width: 0; }
-    .logo-mark { width: 42px; height: 42px; font-size: 19px; border-radius: 12px; }
+    .logo-mark { flex-shrink: 0; }
     .header-text h1 { font-size: 20px; }
     .header-text p { font-size: 12px; }
 
@@ -245,7 +234,7 @@ const styles = `
     /* ── Landing page ── */
     .landing { padding: 0 16px 60px; }
     .landing-hero { padding: 48px 4px 36px; }
-    .landing-logo { width: 70px; height: 70px; font-size: 32px; }
+    .landing-logo { display: block; margin: 0 auto 28px; }
     .landing-title { font-size: 30px; }
     .landing-subtitle { font-size: 15px; }
     .landing-cta { font-size: 16px; padding: 16px 24px; width: 100%; max-width: 320px; }
@@ -1654,19 +1643,8 @@ const styles = `
   }
 
   .landing-logo {
-    width: 88px;
-    height: 88px;
-    background: linear-gradient(135deg, #f76707 0%, #e64980 100%);
-    border-radius: 26px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Nunito', sans-serif;
-    font-size: 42px;
-    font-weight: 900;
-    color: #fff;
+    display: block;
     margin: 0 auto 28px;
-    box-shadow: 0 14px 44px rgba(247, 103, 7, 0.42);
   }
 
   .landing-tagline {
@@ -1892,18 +1870,7 @@ const styles = `
   }
 
   .auth-logo {
-    width: 62px;
-    height: 62px;
-    background: linear-gradient(135deg, #f76707 0%, #e64980 100%);
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Nunito', sans-serif;
-    font-size: 26px;
-    font-weight: 900;
-    color: #fff;
-    box-shadow: 0 8px 24px rgba(247, 103, 7, 0.38);
+    display: block;
     margin: 0 auto 18px;
   }
 
@@ -3313,8 +3280,8 @@ function AuthScreen({ onLogin }) {
   return (
     <div className="auth-overlay">
       <div className="auth-card">
-        <div className="auth-logo">Aa</div>
-        <div className="auth-title">English Worksheet</div>
+        <Logo variant="icon" size={62} className="auth-logo" />
+        <div className="auth-title">ESLtopia</div>
         <div className="auth-subtitle">{subtitle}</div>
         {view === "login" && <LoginForm onLogin={onLogin} onSwitchToSignup={() => setView("signup")} onForgotPassword={() => setView("forgot")} />}
         {view === "signup" && <SignupForm onSignup={onLogin} onSwitchToLogin={() => setView("login")} />}
@@ -3572,7 +3539,7 @@ function LandingPage({ onStart }) {
   return (
     <div className="landing">
       <div className="landing-hero">
-        <div className="landing-logo">Aa</div>
+        <Logo variant="icon" size={88} className="landing-logo" />
         <div className="landing-tagline">For English teachers · Grades 1–6</div>
         <h1 className="landing-title">
           English worksheets<br />
@@ -3925,8 +3892,8 @@ export default function EnglishGenerator() {
         <style>{styles}</style>
         <div className="auth-overlay">
           <div className="auth-card">
-            <div className="auth-logo">Aa</div>
-            <div className="auth-title">English Worksheet</div>
+            <Logo variant="icon" size={62} className="auth-logo" />
+            <div className="auth-title">ESLtopia</div>
             <div className="auth-subtitle">Set a new password</div>
             <ResetPasswordForm onDone={async () => {
               await supabase.auth.signOut();
@@ -3964,9 +3931,11 @@ export default function EnglishGenerator() {
       <style>{styles}</style>
       <div className="app">
         <div className="header">
-          <div className="logo-mark">Aa</div>
+          <div className="logo-mark">
+            <Logo size={52} />
+          </div>
           <div className="header-text">
-            <h1>English Worksheet</h1>
+            <h1>ESLtopia</h1>
             <p>Worksheet Generator · <strong style={{color:"#f76707"}}>Grades 1–3: Disney Stars &amp; Heroes</strong> · Grades 4–6</p>
           </div>
           <div className="user-badge">
