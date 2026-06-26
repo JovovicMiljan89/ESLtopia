@@ -89,7 +89,7 @@ FEATURE_SCHOOL_TEACHERS=1 npm test   # enable once edge functions are live
 
 ## Deployment
 
-Push to `main` → Vercel builds and deploys automatically.
+Push to `main` → Vercel builds and deploys automatically via GitHub integration.
 
 ```bash
 git push origin main
