@@ -153,5 +153,51 @@ if (!ENABLED) {
       await expect(page.getByText(/pending/i)).toBeVisible({ timeout: 15_000 });
       await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
     });
+
+    test('school can remove their own teacher (happy path)', async ({ request }) => {
+      const schoolEmail = uniqueEmail('st-school-remove');
+      await createConfirmedUser({ email: schoolEmail, password: PASSWORD, role: 'school' });
+      const token = await getAccessToken(schoolEmail, PASSWORD);
+
+      const teacherEmail = uniqueEmail('st-removable');
+      await invoke(request, 'create-teacher', token, { email: teacherEmail, firstName: 'Remove', lastName: 'Me' });
+      const teacher = await getProfile(teacherEmail);
+
+      const { status, body } = await invoke(request, 'manage-teacher', token, {
+        teacherId: teacher?.id,
+        action: 'remove',
+      });
+      expect(status, JSON.stringify(body)).toBe(200);
+    });
+
+    test('create-teacher with missing email → 4xx', async ({ request }) => {
+      const schoolEmail = uniqueEmail('st-school-nomail');
+      await createConfirmedUser({ email: schoolEmail, password: PASSWORD, role: 'school' });
+      const token = await getAccessToken(schoolEmail, PASSWORD);
+
+      const { status } = await invoke(request, 'create-teacher', token, {
+        firstName: 'No',
+        lastName: 'Email',
+      });
+      expect(status).toBeGreaterThanOrEqual(400);
+      expect(status).toBeLessThan(500);
+    });
+
+    test('manage-teacher with an unknown action → 400', async ({ request }) => {
+      const schoolEmail = uniqueEmail('st-school-badact');
+      await createConfirmedUser({ email: schoolEmail, password: PASSWORD, role: 'school' });
+      const token = await getAccessToken(schoolEmail, PASSWORD);
+
+      const teacherEmail = uniqueEmail('st-badact-teacher');
+      await invoke(request, 'create-teacher', token, { email: teacherEmail, firstName: 'Bad', lastName: 'Action' });
+      const teacher = await getProfile(teacherEmail);
+
+      const { status } = await invoke(request, 'manage-teacher', token, {
+        teacherId: teacher?.id,
+        action: 'fly-to-moon',
+      });
+      expect(status).toBeGreaterThanOrEqual(400);
+      expect(status).toBeLessThan(500);
+    });
   });
 }

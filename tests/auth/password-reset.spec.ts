@@ -67,3 +67,33 @@ test('weak password → validation error', async ({ page }) => {
 
   await expect(page.getByText('Password must be at least 8 characters.')).toBeVisible();
 });
+
+test('empty new password field → "Password must be at least 8 characters."', async ({ page }) => {
+  await startRecovery(page, uniqueEmail('pw-empty'));
+
+  // Submit without filling either field
+  await page.getByRole('button', { name: 'Set new password' }).click();
+
+  await expect(page.getByText('Password must be at least 8 characters.')).toBeVisible();
+  await expect(page.getByText('Set a new password')).toBeVisible();
+});
+
+test('recovery link is single-use: reusing it does not reopen the reset form', async ({ page }) => {
+  const email = uniqueEmail('pw-once');
+  await createConfirmedUser({ email, password: OLD_PASSWORD, role: 'teacher' });
+  const link = await generateRecoveryLink(email, BASE_URL);
+
+  // First use: complete the reset
+  await page.goto(link);
+  await expect(page.getByText('Set a new password')).toBeVisible({ timeout: 15_000 });
+  await page.getByPlaceholder('Minimum 8 characters').fill(NEW_PASSWORD);
+  await page.getByPlaceholder('Repeat password').fill(NEW_PASSWORD);
+  await page.getByRole('button', { name: 'Set new password' }).click();
+  await expect(page.getByText('Password updated!')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible({ timeout: 15_000 });
+
+  // Second use: spent token must not grant a new recovery session
+  await page.goto(link);
+  await expect(page.getByText('Set a new password')).not.toBeVisible({ timeout: 10_000 });
+  await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible({ timeout: 10_000 });
+});

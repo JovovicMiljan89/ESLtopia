@@ -3650,7 +3650,12 @@ export default function EnglishGenerator() {
       } else if (session && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
         if (!passwordReset) {
           const profile = await fetchProfile(session.user.id);
-          if (profile) setCurrentUser({ ...session.user, ...profile });
+          // Don't surface pending/inactive accounts — let handleSubmit show the error
+          // and call signOut. Without this guard, SIGNED_IN races with handleSubmit
+          // and can unmount the login form before the error is ever visible.
+          if (profile && profile.status !== 'pending' && profile.status !== 'inactive') {
+            setCurrentUser({ ...session.user, ...profile });
+          }
         }
       }
     });
