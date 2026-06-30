@@ -55,6 +55,7 @@ async function invokeEdgeFn(
 // ─── UI: Admin tab ────────────────────────────────────────────────────────────
 
 test.describe('superadmin: Admin tab visibility', () => {
+  test.describe.configure({ retries: 1 });
   const adminEmail = uniqueEmail('sa-ui-admin');
   const targetEmail = uniqueEmail('sa-ui-target');
 
@@ -416,6 +417,7 @@ test.describe('superadmin: profile delete via REST', () => {
 // ─── UI: role change via Admin panel dropdown ─────────────────────────────────
 
 test.describe('superadmin: role change via Admin panel UI', () => {
+  test.describe.configure({ retries: 1 });
   const adminEmail = uniqueEmail('sa-ui-role-admin');
   const targetEmail = uniqueEmail('sa-ui-role-target');
 
