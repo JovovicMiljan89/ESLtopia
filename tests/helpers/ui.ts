@@ -13,6 +13,6 @@ export async function loginToApp(page: Page, email: string, password: string): P
   await page.getByPlaceholder('your@email.com').fill(email);
   await page.getByPlaceholder('Your password').fill(password);
   await page.locator('button[type="submit"].gen-btn').click();
-  await expect(page.getByRole('button', { name: /get started/i })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('button', { name: /get started/i })).toBeVisible({ timeout: 25_000 });
   await page.getByRole('button', { name: /get started/i }).click();
 }

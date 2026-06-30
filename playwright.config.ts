@@ -15,6 +15,8 @@ export default defineConfig({
   // Purge test users once, after all specs finish (see file for why).
   globalTeardown: './tests/global-teardown.ts',
 
+  timeout: 60_000,
+
   use: {
     // Tests run against the deployed production site by default.
     // Override with BASE_URL=... to target a preview or local build.

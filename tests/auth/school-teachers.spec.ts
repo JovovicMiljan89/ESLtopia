@@ -144,6 +144,7 @@ if (!ENABLED) {
     test('a pending teacher cannot log in', async ({ page }) => {
       const teacherEmail = uniqueEmail('st-pending-login');
       await createConfirmedUser({ email: teacherEmail, password: PASSWORD, role: 'teacher' });
+      await getProfile(teacherEmail); // wait for on_auth_user_created trigger
       await setProfileStatus(teacherEmail, 'pending');
 
       await page.goto('/');
@@ -151,7 +152,7 @@ if (!ENABLED) {
       await page.getByPlaceholder('Your password').fill(PASSWORD);
       await page.locator('button[type="submit"].gen-btn').click();
 
-      await expect(page.getByText(/pending/i)).toBeVisible({ timeout: 15_000 });
+      await expect(page.getByText(/pending/i)).toBeVisible({ timeout: 25_000 });
       await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
     });
 

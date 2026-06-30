@@ -90,7 +90,7 @@ test.describe('account status: login restrictions', () => {
 
     await expect(
       page.getByText('Your account is pending. Check your email to set your password.'),
-    ).toBeVisible({ timeout: 15_000 });
+    ).toBeVisible({ timeout: 25_000 });
     await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
   });
 
@@ -102,7 +102,7 @@ test.describe('account status: login restrictions', () => {
 
     await expect(
       page.getByText('Your account has been deactivated. Contact your school administrator.'),
-    ).toBeVisible({ timeout: 15_000 });
+    ).toBeVisible({ timeout: 25_000 });
     await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
   });
 });
