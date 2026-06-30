@@ -267,6 +267,30 @@ test.describe('superadmin: RLS — update any profile role', () => {
     const after = await getProfile(targetEmail);
     expect(after?.role).toBe(roleBefore);
   });
+
+  test('superadmin can promote another user to superadmin', async ({ request }) => {
+    const promoteTargetEmail = uniqueEmail('sa-rls-upd-promote');
+    await createConfirmedUser({ email: promoteTargetEmail, password: PASSWORD, role: 'teacher' });
+    const promoteTarget = await getProfile(promoteTargetEmail);
+    const token = await getAccessToken(adminEmail, PASSWORD);
+
+    const res = await request.patch(
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${promoteTarget?.id}`,
+      {
+        headers: {
+          apikey: ANON_KEY,
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        },
+        data: { role: 'superadmin' },
+        failOnStatusCode: false,
+      },
+    );
+    expect(res.status()).toBe(200);
+    const after = await getProfile(promoteTargetEmail);
+    expect(after?.role).toBe('superadmin');
+  });
 });
 
 // ─── API: profile delete ──────────────────────────────────────────────────────
@@ -386,6 +410,35 @@ test.describe('superadmin: profile delete via REST', () => {
 
     const still = await getProfile(victimEmail);
     expect(still).not.toBeNull();
+  });
+});
+
+// ─── UI: role change via Admin panel dropdown ─────────────────────────────────
+
+test.describe('superadmin: role change via Admin panel UI', () => {
+  const adminEmail = uniqueEmail('sa-ui-role-admin');
+  const targetEmail = uniqueEmail('sa-ui-role-target');
+
+  test.beforeAll(async () => {
+    await createConfirmedUser({ email: adminEmail, password: PASSWORD, role: 'teacher' });
+    await getProfile(adminEmail);
+    await setProfileRole(adminEmail, 'superadmin');
+    await createConfirmedUser({ email: targetEmail, password: PASSWORD, role: 'teacher' });
+    await getProfile(targetEmail);
+  });
+
+  test('superadmin can change a user role via the Admin panel dropdown', async ({ page }) => {
+    await loginToApp(page, adminEmail, PASSWORD);
+    await page.locator('button.tab', { hasText: 'Admin' }).click();
+
+    const row = page.locator('tr').filter({ hasText: targetEmail });
+    await row.locator('select.grade-select').selectOption('school');
+
+    // Poll until the async API call from the UI resolves in the DB
+    await expect.poll(async () => {
+      const p = await getProfile(targetEmail);
+      return p?.role;
+    }, { timeout: 8000 }).toBe('school');
   });
 });
 

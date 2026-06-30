@@ -13,8 +13,9 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import {
   createConfirmedUser,
-  getProfile,
   getAccessToken,
+  getProfile,
+  setProfileSchoolId,
   setProfileStatus,
   uniqueEmail,
 } from '../helpers/cleanup';
@@ -198,6 +199,108 @@ if (!ENABLED) {
       });
       expect(status).toBeGreaterThanOrEqual(400);
       expect(status).toBeLessThan(500);
+    });
+
+    test('pending teacher can activate their own account via activate_my_account RPC', async ({ request }) => {
+      const teacherEmail = uniqueEmail('st-activate-teacher');
+      await createConfirmedUser({ email: teacherEmail, password: PASSWORD, role: 'teacher' });
+      await getProfile(teacherEmail);
+      await setProfileStatus(teacherEmail, 'pending');
+
+      const token = await getAccessToken(teacherEmail, PASSWORD);
+
+      const res = await request.post(
+        `${SUPABASE_URL}/rest/v1/rpc/activate_my_account`,
+        {
+          headers: {
+            apikey: ANON_KEY,
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          data: {},
+          failOnStatusCode: false,
+        },
+      );
+      // void functions return 204 No Content in PostgREST
+      const status = res.status();
+      expect(status, `RPC failed: ${await res.text()}`).toBeGreaterThanOrEqual(200);
+      expect(status).toBeLessThan(300);
+
+      const profile = await getProfile(teacherEmail);
+      expect(profile?.status).toBe('active');
+    });
+
+    test('school sees only their own teachers, not another school\'s (data isolation)', async ({ request }) => {
+      const schoolAEmail = uniqueEmail('st-iso-schoolA');
+      const schoolBEmail = uniqueEmail('st-iso-schoolB');
+      await createConfirmedUser({ email: schoolAEmail, password: PASSWORD, role: 'school' });
+      await createConfirmedUser({ email: schoolBEmail, password: PASSWORD, role: 'school' });
+      const tokenA = await getAccessToken(schoolAEmail, PASSWORD);
+      const tokenB = await getAccessToken(schoolBEmail, PASSWORD);
+
+      const teacherAEmail = uniqueEmail('st-iso-teacherA');
+      const teacherBEmail = uniqueEmail('st-iso-teacherB');
+      await invoke(request, 'create-teacher', tokenA, { email: teacherAEmail, firstName: 'Alpha', lastName: 'Teacher' });
+      await invoke(request, 'create-teacher', tokenB, { email: teacherBEmail, firstName: 'Beta', lastName: 'Teacher' });
+
+      const res = await request.get(
+        `${SUPABASE_URL}/rest/v1/profiles`,
+        {
+          headers: {
+            apikey: ANON_KEY,
+            Authorization: `Bearer ${tokenA}`,
+            Accept: 'application/json',
+          },
+        },
+      );
+      expect(res.status()).toBe(200);
+      const rows = await res.json() as Array<{ email: string }>;
+      const emails = rows.map(r => r.email);
+
+      expect(emails).toContain(teacherAEmail.toLowerCase());
+      expect(emails).not.toContain(teacherBEmail.toLowerCase());
+    });
+
+    test('deactivating a teacher blocks subsequent login attempts', async ({ request }) => {
+      const schoolEmail = uniqueEmail('st-deact-school');
+      const teacherEmail = uniqueEmail('st-deact-teacher');
+      await createConfirmedUser({ email: schoolEmail, password: PASSWORD, role: 'school' });
+      await createConfirmedUser({ email: teacherEmail, password: PASSWORD, role: 'teacher' });
+
+      const school = await getProfile(schoolEmail);
+      const teacher = await getProfile(teacherEmail);
+      // Link teacher to school so manage-teacher accepts the request
+      await setProfileSchoolId(teacherEmail, school!.id);
+
+      // Verify login works before deactivation
+      await getAccessToken(teacherEmail, PASSWORD);
+
+      const schoolToken = await getAccessToken(schoolEmail, PASSWORD);
+      const { status, body } = await invoke(request, 'manage-teacher', schoolToken, {
+        teacherId: teacher?.id,
+        action: 'deactivate',
+      });
+      expect(status, `deactivate failed: ${JSON.stringify(body)}`).toBe(200);
+
+      // After ban_duration is set by manage-teacher, a new login attempt must fail
+      await expect(getAccessToken(teacherEmail, PASSWORD)).rejects.toThrow();
+    });
+
+    test('create-teacher with a duplicate (already-registered) email → error', async ({ request }) => {
+      const schoolEmail = uniqueEmail('st-dup-school');
+      const existingEmail = uniqueEmail('st-dup-existing');
+      await createConfirmedUser({ email: schoolEmail, password: PASSWORD, role: 'school' });
+      // Pre-register the email that the school will try to invite
+      await createConfirmedUser({ email: existingEmail, password: PASSWORD, role: 'teacher' });
+
+      const token = await getAccessToken(schoolEmail, PASSWORD);
+      const { status } = await invoke(request, 'create-teacher', token, {
+        email: existingEmail,
+        firstName: 'Dupe',
+        lastName: 'User',
+      });
+      expect(status).toBeGreaterThanOrEqual(400);
+      expect(status).toBeLessThan(600);
     });
   });
 }

@@ -121,6 +121,17 @@ export async function setProfileStatus(email: string, status: string): Promise<v
   if (error) throw new Error(`setProfileStatus failed: ${error.message}`);
 }
 
+/** Link a teacher to a school (service role bypasses the column guard). */
+export async function setProfileSchoolId(email: string, schoolId: string): Promise<void> {
+  const client = adminClient();
+  if (!client) throw new Error('SUPABASE_SERVICE_ROLE_KEY is required to set school_id');
+  const { error } = await client
+    .from('profiles')
+    .update({ school_id: schoolId })
+    .eq('email', email.toLowerCase());
+  if (error) throw new Error(`setProfileSchoolId failed: ${error.message}`);
+}
+
 /** Force a profile's role (service role bypasses the column guard).
  *  Also updates auth.users.raw_user_meta_data so the next JWT issued for this
  *  user carries the correct user_metadata.role claim (required for RLS policies

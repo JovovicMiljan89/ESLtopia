@@ -9,7 +9,7 @@
 // Fixture users are created via the admin API and removed by the global teardown.
 
 import { test, expect } from '@playwright/test';
-import { createConfirmedUser, getProfile, setProfileStatus, uniqueEmail } from '../helpers/cleanup';
+import { createConfirmedUser, getAccessToken, getProfile, setProfileStatus, uniqueEmail } from '../helpers/cleanup';
 import { loginToApp } from '../helpers/ui';
 
 const PASSWORD = 'Test1234!';
@@ -180,6 +180,62 @@ test.describe('API: JWT payload claims', () => {
     });
     // Supabase returns 403 for a malformed/invalid token, 401 for missing auth
     expect(res.status()).toBe(403);
+  });
+});
+
+// ─── Security: privilege escalation prevention ────────────────────────────────
+//
+// A teacher or school must not be able to elevate their own role to superadmin
+// by PATCHing their own profile via the REST API. The guard_profile_columns
+// trigger on the profiles table blocks role changes for non-superadmin users.
+
+test.describe('privilege escalation: self-promote is blocked', () => {
+  test('teacher cannot self-promote to superadmin via REST', async ({ request }) => {
+    const email = uniqueEmail('selfpromote-teacher');
+    await createConfirmedUser({ email, password: PASSWORD, role: 'teacher' });
+    const profile = await getProfile(email);
+    const token = await getAccessToken(email, PASSWORD);
+
+    await request.patch(
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${profile?.id}`,
+      {
+        headers: {
+          apikey: ANON_KEY,
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        },
+        data: { role: 'superadmin' },
+        failOnStatusCode: false,
+      },
+    );
+
+    const after = await getProfile(email);
+    expect(after?.role).toBe('teacher');
+  });
+
+  test('school cannot self-promote to superadmin via REST', async ({ request }) => {
+    const email = uniqueEmail('selfpromote-school');
+    await createConfirmedUser({ email, password: PASSWORD, role: 'school' });
+    const profile = await getProfile(email);
+    const token = await getAccessToken(email, PASSWORD);
+
+    await request.patch(
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${profile?.id}`,
+      {
+        headers: {
+          apikey: ANON_KEY,
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        },
+        data: { role: 'superadmin' },
+        failOnStatusCode: false,
+      },
+    );
+
+    const after = await getProfile(email);
+    expect(after?.role).toBe('school');
   });
 });
 
