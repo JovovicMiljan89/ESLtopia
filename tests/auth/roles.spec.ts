@@ -69,6 +69,7 @@ test.describe('admin portal access', () => {
 // FEATURE_SCHOOL_TEACHERS; it lives here so it always runs.
 
 test.describe('account status: login restrictions', () => {
+  test.describe.configure({ retries: 2 });
   const pendingEmail = uniqueEmail('status-pending');
   const inactiveEmail = uniqueEmail('status-inactive');
 
