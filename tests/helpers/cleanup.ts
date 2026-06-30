@@ -144,17 +144,25 @@ export async function setProfileRole(email: string, role: string): Promise<void>
   if (authError) throw new Error(`setProfileRole (auth sync) failed: ${authError.message}`);
 }
 
-/** Sign in via the password grant and return the access token (for invoking edge functions). */
+/** Sign in via the password grant and return the access token (for invoking edge functions).
+ *  Retries with linear backoff on 429 (Supabase auth rate limit). */
 export async function getAccessToken(email: string, password: string): Promise<string> {
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-    method: 'POST',
-    headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email.toLowerCase(), password }),
-  });
-  if (!res.ok) throw new Error(`getAccessToken failed: HTTP ${res.status}`);
-  const body = await res.json();
-  if (!body.access_token) throw new Error('getAccessToken: no access_token returned');
-  return body.access_token as string;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.toLowerCase(), password }),
+    });
+    if (res.status === 429) {
+      await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
+      continue;
+    }
+    if (!res.ok) throw new Error(`getAccessToken failed: HTTP ${res.status}`);
+    const body = await res.json();
+    if (!body.access_token) throw new Error('getAccessToken: no access_token returned');
+    return body.access_token as string;
+  }
+  throw new Error('getAccessToken: rate limited after 5 attempts');
 }
 
 /**
