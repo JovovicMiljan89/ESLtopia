@@ -1330,7 +1330,6 @@ const styles = `
   }
   .notes-area:focus { border-color: #f76707; }
 
-  /* NEW: Task type pills */
   .type-pills {
     display: flex;
     gap: 8px;
@@ -1358,7 +1357,6 @@ const styles = `
     color: #fff;
   }
 
-  /* NEW: Grade select in records */
   .grade-select {
     background: #fff9f6;
     border: 1.5px solid #fde0d0;
@@ -1377,7 +1375,6 @@ const styles = `
   }
   .grade-select:focus { border-color: #f76707; }
 
-  /* NEW: Scores in profile modal */
   .scores-log {
     display: flex;
     flex-direction: column;

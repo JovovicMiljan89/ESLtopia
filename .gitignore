@@ -7,3 +7,7 @@ playwright-report
 test-results
 
 supabase/.temp
+
+# Dev artifacts not part of the deployable app
+brand-drop/
+esltopia-project-context.html

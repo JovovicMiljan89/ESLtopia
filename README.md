@@ -6,11 +6,15 @@ Built with React + Vite, Supabase (auth, database, edge functions), and deployed
 
 ## Features
 
-- AI-generated worksheets, exercises, and lesson materials
+- AI-generated worksheets and exercises (match, fill-in, true/false, listen & circle, color boxes)
+- Class and student management — create classes, add/remove students
+- Attendance, payment, and grade tracking per student per class
+- Student profile modal with trimester summaries
 - Role-based access: **Teacher**, **School** (manages teachers), **Superadmin**
 - School admins can invite, deactivate, and remove their teachers
 - Password recovery flow via email
 - Pending/inactive account enforcement at login and session restore
+- Superadmin dashboard — promote roles, delete accounts
 
 ## Tech stack
 
@@ -28,7 +32,7 @@ npm install
 npm run dev        # starts Vite dev server at http://localhost:5173
 ```
 
-Environment variables — copy `.env.example` to `.env.local` and fill in:
+Create `.env.local` and fill in:
 
 ```
 VITE_SUPABASE_URL=
@@ -55,23 +59,24 @@ npm run test:report
 
 ### Required env for tests
 
-Add to `.env.test.local` (git-ignored):
+Create `.env.test.local` (git-ignored):
 
 ```
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=   # needed to create/delete test users
-BASE_URL=https://esltopia.vercel.app
 ```
+
+`BASE_URL` defaults to `https://esltopia.vercel.app` — override to target a preview or local build.
 
 Test users are created under the `@example.test` domain and purged automatically after each run.
 
 ### Feature-flagged tests
 
-The school-teacher edge-function tests are skipped until the feature is deployed:
+The school-teacher edge-function tests are skipped by default. Add to `.env.test.local`:
 
-```bash
-FEATURE_SCHOOL_TEACHERS=1 npm test   # enable once edge functions are live
+```
+FEATURE_SCHOOL_TEACHERS=1
 ```
 
 ## Test coverage
@@ -83,9 +88,22 @@ FEATURE_SCHOOL_TEACHERS=1 npm test   # enable once edge functions are live
 | `logout.spec.ts` | UI sign-out, API logout, session invalidation |
 | `forgot-password.spec.ts` | UI forgot-password form, API recover endpoint |
 | `password-reset.spec.ts` | Recovery link flow, validation, single-use enforcement |
-| `roles.spec.ts` | Superadmin coercion, admin portal access, account status restrictions, JWT claims |
+| `roles.spec.ts` | Superadmin coercion, admin portal access, account status restrictions, JWT claims, privilege escalation via REST |
 | `navigation.spec.ts` | Auth guards, session persistence across reload, deactivated-account eviction |
+| `superadmin.spec.ts` | Admin tab access, profile read/update/delete RLS, role promotion, Admin panel UI |
 | `school-teachers.spec.ts` | School creates/manages/removes teachers, edge-function error handling |
+| `classes.spec.ts` | Classes & records CRUD, student management, RLS isolation, cascade delete, superadmin full access |
+| `profile.spec.ts` | Profile self-update (name fields), trigger protection (role change blocked), cross-user RLS |
+
+## Database schema
+
+Three core tables, all with Row Level Security:
+
+- **`profiles`** — id, first/last/middle name, email, role, status, school_id
+- **`classes`** — id (text PK), name, owner_id, students (jsonb array)
+- **`records`** — class_id (PK, cascades from classes), owner_id, data (jsonb: attendance/payment/grades/notes)
+
+Migrations live in `supabase/migrations/`.
 
 ## Deployment
 
@@ -99,5 +117,5 @@ git push origin main
 
 GitHub Actions runs two scheduled workflows:
 
-- **daily-tests** — full Playwright suite against production every day
-- **daily-registrations** — registration report
+- **daily-tests** — full Playwright suite against production every day at 13:00 UTC
+- **daily-registrations** — new-user report emailed every day at 09:00 UTC
