@@ -121,6 +121,29 @@ export async function setProfileStatus(email: string, status: string): Promise<v
   if (error) throw new Error(`setProfileStatus failed: ${error.message}`);
 }
 
+/** Force a profile's role (service role bypasses the column guard).
+ *  Also updates auth.users.raw_user_meta_data so the next JWT issued for this
+ *  user carries the correct user_metadata.role claim (required for RLS policies
+ *  that read from auth.jwt() rather than querying the profiles table). */
+export async function setProfileRole(email: string, role: string): Promise<void> {
+  const client = adminClient();
+  if (!client) throw new Error('SUPABASE_SERVICE_ROLE_KEY is required to set role');
+
+  const profile = await getProfile(email);
+  if (!profile) throw new Error(`setProfileRole: no profile found for ${email}`);
+
+  const { error: profileError } = await client
+    .from('profiles')
+    .update({ role })
+    .eq('email', email.toLowerCase());
+  if (profileError) throw new Error(`setProfileRole failed: ${profileError.message}`);
+
+  const { error: authError } = await client.auth.admin.updateUserById(profile.id, {
+    user_metadata: { role },
+  });
+  if (authError) throw new Error(`setProfileRole (auth sync) failed: ${authError.message}`);
+}
+
 /** Sign in via the password grant and return the access token (for invoking edge functions). */
 export async function getAccessToken(email: string, password: string): Promise<string> {
   const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
