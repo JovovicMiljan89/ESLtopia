@@ -3979,6 +3979,13 @@ export default function EnglishGenerator() {
     return () => document.body.classList.remove('pdf-modal-open');
   }, [pdfModal]);
 
+  useEffect(() => {
+    if (!pdfModal) return;
+    const onKey = (e) => { if (e.key === 'Escape') setPdfModal(false); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [pdfModal]);
+
   const syncRecord = useCallback((classId, data) => {
     clearTimeout(syncTimers.current[classId]);
     syncTimers.current[classId] = setTimeout(async () => {
