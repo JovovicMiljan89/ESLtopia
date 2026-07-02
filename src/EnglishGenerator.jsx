@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { createPortal } from "react-dom";
 import { supabase } from './supabaseClient.js';
 import Logo from './Logo.jsx';
+import PdfPreviewModal from './PdfPreviewModal.jsx';
+import { shuffle, ListenCircleTask, ColorBoxTask, MatchTask, FillInTask, TrueFalseTask } from './WorksheetTasks.jsx';
 
 const storage = {
   async get(key) {
@@ -2259,10 +2260,6 @@ const TOPICS = [
 
 // ─── TASK GENERATORS ─────────────────────────────────────────────────────────
 
-function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
-}
-
 function makeTFFromPairs(pairs, count) {
   const selected = shuffle(pairs).slice(0, Math.min(count, pairs.length));
   const allSr = pairs.map(p => p.sr);
@@ -2882,161 +2879,6 @@ const TOPIC_DATA = {
 };
 
 // ─── RENDER HELPERS ───────────────────────────────────────────────────────────
-
-function ListenCircleTask({ data }) {
-  return (
-    <div>
-      <div className="section-title">Slušaj i zaokruži 👂</div>
-      <p style={{ fontSize: 13, color: "#9b7060", marginBottom: 8 }}>{data.instruction}</p>
-      {data.teacherNote && <div className="teacher-note">📋 Teacher's note: {data.teacherNote}</div>}
-      <div className="listen-grid">
-        {data.items.map((item, i) => (
-          <div className="listen-card" key={i}>
-            <div className="listen-card-emoji">{item.emoji}</div>
-            <div className="listen-card-word">{item.word}</div>
-            {item.sr && <div className="listen-card-sr">{item.sr}</div>}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ColorBoxTask({ data }) {
-  return (
-    <div>
-      <div className="section-title">Oboj 🖍️</div>
-      <p style={{ fontSize: 13, color: "#9b7060", marginBottom: 8 }}>{data.instruction}</p>
-      {data.teacherNote && <div className="teacher-note">📋 Teacher's note: {data.teacherNote}</div>}
-      <div className="color-grid">
-        {data.items.map((item, i) => (
-          <div className="color-box" key={i}>
-            <div className="color-box-square" />
-            <div className="color-box-word">{item.word}</div>
-            <div className="color-box-sr">{item.sr}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function MatchTask({ data, showAnswers }) {
-  const [shuffledRight] = useState(() => shuffle(data.pairs.map(p => p.sr)));
-  return (
-    <div>
-      <div className="section-title">Poveži</div>
-      <p style={{ fontSize: 13, color: "#9b7060", marginBottom: 16 }}>{data.instruction}</p>
-      <div className="match-grid">
-        <div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#c4a498", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>{data.leftLabel}</div>
-          {data.pairs.map((p, i) => (
-            <div className="match-row" key={i}>
-              <span className="match-num">{i + 1}.</span>
-              <span className="match-word">{p.en}</span>
-              {showAnswers
-                ? <span className="match-answer">{p.sr}</span>
-                : <span className="match-line" />}
-            </div>
-          ))}
-        </div>
-        <div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#c4a498", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>{data.rightLabel}</div>
-          {shuffledRight.map((w, i) => (
-            <div className="match-row" key={i} style={{ justifyContent: "flex-start" }}>
-              <span className="match-num">{String.fromCharCode(65 + i)}.</span>
-              <span className="match-word">{w}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      {showAnswers && (
-        <div className="answer-key" style={{ marginTop: 20 }}>
-          <div className="answer-key-title">Answer Key</div>
-          <div className="answer-key-grid">
-            {data.pairs.map((p, i) => (
-              <span key={i} className="answer-key-item">{i + 1}. {p.en} = {p.sr}</span>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function FillInTask({ data, showAnswers }) {
-  return (
-    <div>
-      <div className="section-title">Popuni</div>
-      <p style={{ fontSize: 13, color: "#9b7060", marginBottom: 14 }}>{data.instruction}</p>
-      {data.wordBank.length > 0 && (
-        <div className="word-bank">
-          <div className="word-bank-label">Word bank</div>
-          {data.wordBank.map((w, i) => <span key={i} className="word-chip">{w}</span>)}
-        </div>
-      )}
-      <div className="fill-list">
-        {data.items.map((item, i) => {
-          const parts = item.sentence.split("___");
-          return (
-            <div className="fill-item" key={i}>
-              <span className="fill-num">{i + 1}.</span>
-              <span className="fill-sentence">
-                {parts[0]}
-                {showAnswers
-                  ? <span className="fill-blank-answer">{item.answer}</span>
-                  : <span className="fill-blank" />}
-                {parts[1]}
-                {item.hint && <span style={{ fontSize: 12, fontWeight: 400, color: "#c4a498", marginLeft: 6 }}>{item.hint}</span>}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-      {showAnswers && (
-        <div className="answer-key" style={{ marginTop: 20 }}>
-          <div className="answer-key-title">Answer Key</div>
-          <div className="answer-key-grid">
-            {data.items.map((item, i) => (
-              <span key={i} className="answer-key-item">{i + 1}. {item.answer}</span>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function TrueFalseTask({ data, showAnswers }) {
-  return (
-    <div>
-      <div className="section-title">True or False?</div>
-      <p style={{ fontSize: 13, color: "#9b7060", marginBottom: 14 }}>{data.instruction}</p>
-      <div className="tf-list">
-        {data.items.map((item, i) => (
-          <div className="tf-item" key={i}>
-            <span className="tf-num">{i + 1}.</span>
-            <span className="tf-sentence">{item.sentence}</span>
-            <div className="tf-boxes">
-              <div className={`tf-box ${showAnswers && item.answer === true ? "correct-t" : ""}`}>T</div>
-              <div className={`tf-box ${showAnswers && item.answer === false ? "correct-f" : ""}`}>F</div>
-            </div>
-          </div>
-        ))}
-      </div>
-      {showAnswers && (
-        <div className="answer-key" style={{ marginTop: 20 }}>
-          <div className="answer-key-title">Answer Key</div>
-          <div className="answer-key-grid">
-            {data.items.map((item, i) => (
-              <span key={i} className="answer-key-item">{i + 1}. {item.answer ? "True" : "False"}</span>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
 
@@ -3969,22 +3811,7 @@ export default function EnglishGenerator() {
   // Debounced Supabase sync for record mutations
   const syncTimers = useRef({});
   const ownerIdRef = useRef(null);
-  const pdfPageRef = useRef(null);
-  const pdfScrollRef = useRef(null);
   useEffect(() => { ownerIdRef.current = currentUser?.id; }, [currentUser?.id]);
-
-  useEffect(() => {
-    if (pdfModal) document.body.classList.add('pdf-modal-open');
-    else document.body.classList.remove('pdf-modal-open');
-    return () => document.body.classList.remove('pdf-modal-open');
-  }, [pdfModal]);
-
-  useEffect(() => {
-    if (!pdfModal) return;
-    const onKey = (e) => { if (e.key === 'Escape') setPdfModal(false); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [pdfModal]);
 
   const syncRecord = useCallback((classId, data) => {
     clearTimeout(syncTimers.current[classId]);
@@ -4149,23 +3976,6 @@ export default function EnglishGenerator() {
     setShowAnswers(false);
     setPdfModal(true);
     setGenerateKey(k => k + 1);
-    setTimeout(() => { pdfScrollRef.current?.scrollTo({ top: 0 }); }, 0);
-  };
-
-  const handlePrint = () => window.print();
-
-  const handleDownloadPDF = () => {
-    const el = pdfPageRef.current;
-    if (!el) return;
-    const win = window.open('', '_blank');
-    if (!win) { alert('Pop-up blocked — please allow pop-ups for this site.'); return; }
-    win.document.write(`<!DOCTYPE html><html><head>
-<meta charset="utf-8">
-<title>${topic?.emoji || ''} ${topic?.name || 'Worksheet'}</title>
-<style>${styles}</style>
-</head><body style="background:#fff;padding:32px 40px;">${el.innerHTML}</body></html>`);
-    win.document.close();
-    win.onload = () => { win.focus(); win.print(); };
   };
 
   const topic = TOPICS.find(t => t.id === selectedTopic);
@@ -4795,53 +4605,19 @@ export default function EnglishGenerator() {
         })()}
       </div>
 
-      {pdfModal && tasks && topic && createPortal(
-        <div className="pdf-modal-overlay">
-          <div className="pdf-modal-header">
-            <span className="pdf-modal-title">📄 {topic.emoji} {topic.name} · Grade {topic.grade}</span>
-            <button className="pdf-action-btn pdf-answers-btn" onClick={() => setShowAnswers(v => !v)}>
-              {showAnswers ? "Hide answers" : "Show answers"}
-            </button>
-            <button className="pdf-action-btn pdf-new-btn" onClick={generate}>
-              ↺ New set
-            </button>
-            <div className="pdf-header-sep" />
-            <button className="pdf-action-btn pdf-print-btn" onClick={handlePrint}>
-              🖨 Print
-            </button>
-            <button className="pdf-action-btn pdf-download-btn" onClick={handleDownloadPDF}>
-              ⬇ Download PDF
-            </button>
-            <div className="pdf-header-sep" />
-            <button className="pdf-action-btn pdf-close-btn" onClick={() => setPdfModal(false)}>
-              ✕ Close
-            </button>
-          </div>
-          <div className="pdf-modal-scroll" ref={pdfScrollRef}>
-            <div className="pdf-a4-page" key={generateKey} ref={pdfPageRef}>
-              <div className="ws-header">
-                <div>
-                  <div className="ws-badge">Grade {topic.grade} · English</div>
-                  <div className="ws-title">{topic.emoji} {topic.name}</div>
-                  <div className="ws-subtitle">{topic.desc}</div>
-                </div>
-                <div className="ws-fields">
-                  <div className="ws-field-line">Name: <span>{studentName}</span></div>
-                  {selectedClass && <div className="ws-field-line">Class: <span>{selectedClass.name}</span></div>}
-                  <div className="ws-field-line">Date: <span /></div>
-                  <div className="ws-field-line">Grade: <span /></div>
-                </div>
-              </div>
-              {tasks.type === "listen-circle" && <ListenCircleTask data={tasks} />}
-              {tasks.type === "color-boxes" && <ColorBoxTask data={tasks} />}
-              {tasks.type === "match" && <MatchTask data={tasks} showAnswers={showAnswers} />}
-              {tasks.type === "fillin" && <FillInTask data={tasks} showAnswers={showAnswers} />}
-              {tasks.type === "tf" && <TrueFalseTask data={tasks} showAnswers={showAnswers} />}
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+      <PdfPreviewModal
+        open={pdfModal}
+        topic={topic}
+        tasks={tasks}
+        studentName={studentName}
+        selectedClass={selectedClass}
+        showAnswers={showAnswers}
+        sheetKey={generateKey}
+        styles={styles}
+        onClose={() => setPdfModal(false)}
+        onNewSet={generate}
+        onToggleAnswers={() => setShowAnswers(v => !v)}
+      />
     </>
   );
 }
