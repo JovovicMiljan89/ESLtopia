@@ -2921,7 +2921,7 @@ function ColorBoxTask({ data }) {
 }
 
 function MatchTask({ data, showAnswers }) {
-  const shuffledRight = shuffle(data.pairs.map(p => p.sr));
+  const [shuffledRight] = useState(() => shuffle(data.pairs.map(p => p.sr)));
   return (
     <div>
       <div className="section-title">Poveži</div>
@@ -3926,6 +3926,7 @@ export default function EnglishGenerator() {
   const [showAnswers, setShowAnswers] = useState(false);
   const [taskType, setTaskType] = useState("match");
   const [pdfModal, setPdfModal] = useState(false);
+  const [generateKey, setGenerateKey] = useState(0);
 
   const [classes, setClasses] = useState([]);
   const [loaded, setLoaded] = useState(false);
@@ -3968,6 +3969,7 @@ export default function EnglishGenerator() {
   const syncTimers = useRef({});
   const ownerIdRef = useRef(null);
   const pdfPageRef = useRef(null);
+  const pdfScrollRef = useRef(null);
   useEffect(() => { ownerIdRef.current = currentUser?.id; }, [currentUser?.id]);
 
   useEffect(() => {
@@ -4138,6 +4140,8 @@ export default function EnglishGenerator() {
     setTasks(result);
     setShowAnswers(false);
     setPdfModal(true);
+    setGenerateKey(k => k + 1);
+    setTimeout(() => { pdfScrollRef.current?.scrollTo({ top: 0 }); }, 0);
   };
 
   const handlePrint = () => window.print();
@@ -4664,8 +4668,8 @@ export default function EnglishGenerator() {
                 ✕ Close
               </button>
             </div>
-            <div className="pdf-modal-scroll">
-              <div className="pdf-a4-page" ref={pdfPageRef}>
+            <div className="pdf-modal-scroll" ref={pdfScrollRef}>
+              <div className="pdf-a4-page" key={generateKey} ref={pdfPageRef}>
                 <div className="ws-header">
                   <div>
                     <div className="ws-badge">Grade {topic.grade} · English</div>
