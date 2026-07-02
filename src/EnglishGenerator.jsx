@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { supabase } from './supabaseClient.js';
 import Logo from './Logo.jsx';
 
@@ -4787,7 +4788,7 @@ export default function EnglishGenerator() {
         })()}
       </div>
 
-      {pdfModal && tasks && topic && (
+      {pdfModal && tasks && topic && createPortal(
         <div className="pdf-modal-overlay">
           <div className="pdf-modal-header">
             <span className="pdf-modal-title">📄 {topic.emoji} {topic.name} · Grade {topic.grade}</span>
@@ -4831,7 +4832,8 @@ export default function EnglishGenerator() {
               {tasks.type === "tf" && <TrueFalseTask data={tasks} showAnswers={showAnswers} />}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
