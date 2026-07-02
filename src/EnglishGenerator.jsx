@@ -4646,53 +4646,6 @@ export default function EnglishGenerator() {
           </>
         )}
 
-        {pdfModal && tasks && topic && (
-          <div className="pdf-modal-overlay">
-            <div className="pdf-modal-header">
-              <span className="pdf-modal-title">📄 {topic.emoji} {topic.name} · Grade {topic.grade}</span>
-              <button className="pdf-action-btn pdf-answers-btn" onClick={() => setShowAnswers(v => !v)}>
-                {showAnswers ? "Hide answers" : "Show answers"}
-              </button>
-              <button className="pdf-action-btn pdf-new-btn" onClick={generate}>
-                ↺ New set
-              </button>
-              <div className="pdf-header-sep" />
-              <button className="pdf-action-btn pdf-print-btn" onClick={handlePrint}>
-                🖨 Print
-              </button>
-              <button className="pdf-action-btn pdf-download-btn" onClick={handleDownloadPDF}>
-                ⬇ Download PDF
-              </button>
-              <div className="pdf-header-sep" />
-              <button className="pdf-action-btn pdf-close-btn" onClick={() => setPdfModal(false)}>
-                ✕ Close
-              </button>
-            </div>
-            <div className="pdf-modal-scroll" ref={pdfScrollRef}>
-              <div className="pdf-a4-page" key={generateKey} ref={pdfPageRef}>
-                <div className="ws-header">
-                  <div>
-                    <div className="ws-badge">Grade {topic.grade} · English</div>
-                    <div className="ws-title">{topic.emoji} {topic.name}</div>
-                    <div className="ws-subtitle">{topic.desc}</div>
-                  </div>
-                  <div className="ws-fields">
-                    <div className="ws-field-line">Name: <span>{studentName}</span></div>
-                    {selectedClass && <div className="ws-field-line">Class: <span>{selectedClass.name}</span></div>}
-                    <div className="ws-field-line">Date: <span /></div>
-                    <div className="ws-field-line">Grade: <span /></div>
-                  </div>
-                </div>
-                {tasks.type === "listen-circle" && <ListenCircleTask data={tasks} />}
-                {tasks.type === "color-boxes" && <ColorBoxTask data={tasks} />}
-                {tasks.type === "match" && <MatchTask data={tasks} showAnswers={showAnswers} />}
-                {tasks.type === "fillin" && <FillInTask data={tasks} showAnswers={showAnswers} />}
-                {tasks.type === "tf" && <TrueFalseTask data={tasks} showAnswers={showAnswers} />}
-              </div>
-            </div>
-          </div>
-        )}
-
         {profile && (() => {
           const cls = classes.find(c => c.id === profile.classId);
           const hist = getStudentHistory(profile.classId, profile.name);
@@ -4833,6 +4786,53 @@ export default function EnglishGenerator() {
           );
         })()}
       </div>
+
+      {pdfModal && tasks && topic && (
+        <div className="pdf-modal-overlay">
+          <div className="pdf-modal-header">
+            <span className="pdf-modal-title">📄 {topic.emoji} {topic.name} · Grade {topic.grade}</span>
+            <button className="pdf-action-btn pdf-answers-btn" onClick={() => setShowAnswers(v => !v)}>
+              {showAnswers ? "Hide answers" : "Show answers"}
+            </button>
+            <button className="pdf-action-btn pdf-new-btn" onClick={generate}>
+              ↺ New set
+            </button>
+            <div className="pdf-header-sep" />
+            <button className="pdf-action-btn pdf-print-btn" onClick={handlePrint}>
+              🖨 Print
+            </button>
+            <button className="pdf-action-btn pdf-download-btn" onClick={handleDownloadPDF}>
+              ⬇ Download PDF
+            </button>
+            <div className="pdf-header-sep" />
+            <button className="pdf-action-btn pdf-close-btn" onClick={() => setPdfModal(false)}>
+              ✕ Close
+            </button>
+          </div>
+          <div className="pdf-modal-scroll" ref={pdfScrollRef}>
+            <div className="pdf-a4-page" key={generateKey} ref={pdfPageRef}>
+              <div className="ws-header">
+                <div>
+                  <div className="ws-badge">Grade {topic.grade} · English</div>
+                  <div className="ws-title">{topic.emoji} {topic.name}</div>
+                  <div className="ws-subtitle">{topic.desc}</div>
+                </div>
+                <div className="ws-fields">
+                  <div className="ws-field-line">Name: <span>{studentName}</span></div>
+                  {selectedClass && <div className="ws-field-line">Class: <span>{selectedClass.name}</span></div>}
+                  <div className="ws-field-line">Date: <span /></div>
+                  <div className="ws-field-line">Grade: <span /></div>
+                </div>
+              </div>
+              {tasks.type === "listen-circle" && <ListenCircleTask data={tasks} />}
+              {tasks.type === "color-boxes" && <ColorBoxTask data={tasks} />}
+              {tasks.type === "match" && <MatchTask data={tasks} showAnswers={showAnswers} />}
+              {tasks.type === "fillin" && <FillInTask data={tasks} showAnswers={showAnswers} />}
+              {tasks.type === "tf" && <TrueFalseTask data={tasks} showAnswers={showAnswers} />}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
