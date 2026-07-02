@@ -2949,6 +2949,16 @@ function MatchTask({ data, showAnswers }) {
           ))}
         </div>
       </div>
+      {showAnswers && (
+        <div className="answer-key" style={{ marginTop: 20 }}>
+          <div className="answer-key-title">Answer Key</div>
+          <div className="answer-key-grid">
+            {data.pairs.map((p, i) => (
+              <span key={i} className="answer-key-item">{i + 1}. {p.en} = {p.sr}</span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -2984,7 +2994,7 @@ function FillInTask({ data, showAnswers }) {
       </div>
       {showAnswers && (
         <div className="answer-key" style={{ marginTop: 20 }}>
-          <div className="answer-key-title">Ključ odgovora</div>
+          <div className="answer-key-title">Answer Key</div>
           <div className="answer-key-grid">
             {data.items.map((item, i) => (
               <span key={i} className="answer-key-item">{i + 1}. {item.answer}</span>
@@ -3013,6 +3023,16 @@ function TrueFalseTask({ data, showAnswers }) {
           </div>
         ))}
       </div>
+      {showAnswers && (
+        <div className="answer-key" style={{ marginTop: 20 }}>
+          <div className="answer-key-title">Answer Key</div>
+          <div className="answer-key-grid">
+            {data.items.map((item, i) => (
+              <span key={i} className="answer-key-item">{i + 1}. {item.answer ? "True" : "False"}</span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
