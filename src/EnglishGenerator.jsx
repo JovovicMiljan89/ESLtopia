@@ -735,15 +735,46 @@ const styles = `
   }
 
   @media print {
-    body { background: #fff; }
-    .app { padding: 0; max-width: 100%; }
-    .configurator, .worksheet-toolbar, .classes-panel { display: none !important; }
-    .worksheet-wrap { border: none; border-radius: 0; }
-    .worksheet { padding: 20px; }
-    .answer-key { display: none; }
-    .tf-box.correct-t, .tf-box.correct-f { background: #fff; border-color: #ccc; color: transparent; }
-    .fill-blank-answer { color: transparent; border-bottom-color: #2d1b0e; }
-    .match-answer { color: transparent; }
+    /* Modal closed — print inline worksheet */
+    body:not(.pdf-modal-open) { background: #fff; }
+    body:not(.pdf-modal-open) .app { padding: 0; max-width: 100%; }
+    body:not(.pdf-modal-open) .configurator,
+    body:not(.pdf-modal-open) .worksheet-toolbar,
+    body:not(.pdf-modal-open) .classes-panel { display: none !important; }
+    body:not(.pdf-modal-open) .worksheet-wrap { border: none; border-radius: 0; }
+    body:not(.pdf-modal-open) .worksheet { padding: 20px; }
+    body:not(.pdf-modal-open) .answer-key { display: none; }
+    body:not(.pdf-modal-open) .tf-box.correct-t,
+    body:not(.pdf-modal-open) .tf-box.correct-f { background: #fff; border-color: #ccc; color: transparent; }
+    body:not(.pdf-modal-open) .fill-blank-answer { color: transparent; border-bottom-color: #2d1b0e; }
+    body:not(.pdf-modal-open) .match-answer { color: transparent; }
+
+    /* Modal open — print only the A4 preview */
+    body.pdf-modal-open .app { display: none !important; }
+    body.pdf-modal-open .pdf-modal-overlay {
+      position: static !important;
+      background: #fff !important;
+      backdrop-filter: none !important;
+    }
+    body.pdf-modal-open .pdf-modal-header { display: none !important; }
+    body.pdf-modal-open .pdf-modal-scroll {
+      padding: 0 !important;
+      overflow: visible !important;
+      background: #fff !important;
+      display: block !important;
+    }
+    body.pdf-modal-open .pdf-a4-page {
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      width: 100% !important;
+      min-height: unset !important;
+      padding: 20px !important;
+    }
+    body.pdf-modal-open .answer-key { display: none !important; }
+    body.pdf-modal-open .tf-box.correct-t,
+    body.pdf-modal-open .tf-box.correct-f { background: #fff; border-color: #ccc; color: transparent; }
+    body.pdf-modal-open .fill-blank-answer { color: transparent; border-bottom-color: #2d1b0e; }
+    body.pdf-modal-open .match-answer { color: transparent; }
   }
 
   .tabs {
@@ -2067,6 +2098,127 @@ const styles = `
     .role-cards { grid-template-columns: 1fr 1fr; }
   }
 
+  /* ── PDF Preview Modal ── */
+  .pdf-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: #1e1e2e;
+    display: flex;
+    flex-direction: column;
+    z-index: 200;
+  }
+
+  .pdf-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: #13132a;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    flex-shrink: 0;
+  }
+
+  .pdf-modal-title {
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.8);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .pdf-modal-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 20px 48px;
+    display: flex;
+    justify-content: center;
+    background: #2a2a3e;
+  }
+
+  .pdf-a4-page {
+    background: #fff;
+    width: 794px;
+    max-width: 100%;
+    border-radius: 3px;
+    box-shadow: 0 14px 52px rgba(0,0,0,0.6);
+    padding: 40px 44px 52px;
+    flex-shrink: 0;
+    align-self: flex-start;
+  }
+
+  .pdf-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    padding: 9px 18px;
+    transition: all 0.18s;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+  }
+
+  .pdf-action-btn.pdf-close-btn {
+    background: rgba(255,255,255,0.09);
+    color: rgba(255,255,255,0.7);
+  }
+  .pdf-action-btn.pdf-close-btn:hover { background: rgba(255,255,255,0.16); color: #fff; }
+
+  .pdf-action-btn.pdf-new-btn {
+    background: rgba(255,255,255,0.09);
+    color: rgba(255,255,255,0.7);
+  }
+  .pdf-action-btn.pdf-new-btn:hover { background: rgba(255,255,255,0.16); color: #fff; }
+
+  .pdf-action-btn.pdf-answers-btn {
+    background: rgba(255,255,255,0.09);
+    color: rgba(255,255,255,0.7);
+  }
+  .pdf-action-btn.pdf-answers-btn:hover { background: rgba(255,255,255,0.16); color: #fff; }
+
+  .pdf-action-btn.pdf-print-btn {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    border: 1.5px solid rgba(255,255,255,0.22);
+  }
+  .pdf-action-btn.pdf-print-btn:hover { background: rgba(255,255,255,0.22); }
+
+  .pdf-action-btn.pdf-download-btn {
+    background: linear-gradient(135deg, #f76707 0%, #e64980 100%);
+    color: #fff;
+    box-shadow: 0 3px 16px rgba(247,103,7,0.42);
+  }
+  .pdf-action-btn.pdf-download-btn:hover {
+    box-shadow: 0 6px 22px rgba(247,103,7,0.54);
+    transform: translateY(-1px);
+  }
+
+  .pdf-header-sep {
+    width: 1px;
+    height: 22px;
+    background: rgba(255,255,255,0.14);
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 860px) {
+    .pdf-a4-page { width: 100%; padding: 20px 14px 28px; }
+    .pdf-modal-scroll { padding: 12px 6px 32px; }
+  }
+
+  @media (max-width: 480px) {
+    .pdf-modal-header { padding: 10px 12px; flex-wrap: wrap; }
+    .pdf-modal-title { width: 100%; order: -1; }
+    .pdf-action-btn { font-size: 12px; padding: 8px 12px; }
+  }
+
 `;
 
 
@@ -3309,9 +3461,15 @@ function AdminPanel({ currentUser }) {
 
   const deleteUser = async (userId) => {
     if (userId === currentUser.id) return;
-    if (!window.confirm("Obrisati ovog korisnika? Podaci ostaju u bazi.")) return;
-    const { error } = await supabase.from('profiles').delete().eq('id', userId);
-    if (!error) setUsers(prev => prev.filter(u => u.id !== userId));
+    if (!window.confirm("Delete this user? Their data will be retained for reporting.")) return;
+    const deletedAt = new Date().toISOString();
+    const { error } = await supabase.from('profiles').update({ deleted_at: deletedAt }).eq('id', userId);
+    if (!error) setUsers(prev => prev.map(u => u.id === userId ? { ...u, deleted_at: deletedAt } : u));
+  };
+
+  const restoreUser = async (userId) => {
+    const { error } = await supabase.from('profiles').update({ deleted_at: null }).eq('id', userId);
+    if (!error) setUsers(prev => prev.map(u => u.id === userId ? { ...u, deleted_at: null } : u));
   };
 
   if (adminLoading) {
@@ -3323,69 +3481,140 @@ function AdminPanel({ currentUser }) {
     );
   }
 
+  const totalRegistered = users.length;
+  const activeCount  = users.filter(u => !u.deleted_at && u.status === 'active').length;
+  const pendingCount = users.filter(u => !u.deleted_at && u.status === 'pending').length;
+  const inactiveCount = users.filter(u => !u.deleted_at && u.status === 'inactive').length;
+  const deletedCount = users.filter(u => u.deleted_at).length;
+
+  const dailyMap = {};
+  users.forEach(u => {
+    const day = u.created_at ? new Date(u.created_at).toLocaleDateString('en-GB') : 'Unknown';
+    dailyMap[day] = (dailyMap[day] || 0) + 1;
+  });
+  const dailyRows = Object.entries(dailyMap).sort((a, b) => {
+    const parse = s => { const [d, m, y] = s.split('/'); return new Date(`${y}-${m}-${d}`); };
+    return parse(b[0]) - parse(a[0]);
+  });
+
   return (
     <div className="classes-panel">
-      <div className="config-title">Admin panel — User management</div>
-      <p style={{ fontSize: 13, color: "#9b7060", marginBottom: 20 }}>
-        Total registered: <strong>{users.length}</strong>
-      </p>
+      <div className="config-title">Admin panel — Overview</div>
+
+      {/* ── Summary stats ── */}
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 24 }}>
+        {[
+          { label: "Total registered", value: totalRegistered, color: "#2d1b0e" },
+          { label: "Active",           value: activeCount,     color: "#2b8a3e" },
+          { label: "Pending",          value: pendingCount,    color: "#e67700" },
+          { label: "Inactive",         value: inactiveCount,   color: "#9b7060" },
+          { label: "Deleted",          value: deletedCount,    color: "#c92a2a" },
+        ].map(({ label, value, color }) => (
+          <div key={label} style={{
+            background: "#fff8f5", border: "1px solid #f0ddd5", borderRadius: 10,
+            padding: "10px 18px", minWidth: 100, textAlign: "center",
+          }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color, fontFamily: "'Nunito', sans-serif" }}>{value}</div>
+            <div style={{ fontSize: 11, color: "#9b7060", fontWeight: 700, marginTop: 2 }}>{label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Daily registrations ── */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ fontSize: 13, fontWeight: 800, color: "#2d1b0e", marginBottom: 8, fontFamily: "'Nunito', sans-serif" }}>
+          Daily registrations
+        </div>
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Registered</th>
+            </tr>
+          </thead>
+          <tbody>
+            {dailyRows.map(([date, count]) => (
+              <tr key={date}>
+                <td style={{ fontSize: 13, color: "#9b7060" }}>{date}</td>
+                <td style={{ fontSize: 13, fontWeight: 800, color: "#2d1b0e" }}>{count}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ── User management ── */}
+      <div style={{ fontSize: 13, fontWeight: 800, color: "#2d1b0e", marginBottom: 8, fontFamily: "'Nunito', sans-serif" }}>
+        User management
+      </div>
       <table className="admin-table">
         <thead>
           <tr>
             <th>User</th>
             <th>Email</th>
             <th>Role</th>
+            <th>Status</th>
             <th>Registered</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {users.map(u => (
-            <tr key={u.id}>
-              <td>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{
-                    width: 32, height: 32, borderRadius: 8,
-                    background: "linear-gradient(135deg, #f76707 0%, #e64980 100%)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "#fff", fontFamily: "'Nunito', sans-serif", fontSize: 12, fontWeight: 900, flexShrink: 0,
-                  }}>
-                    {(u.firstName?.[0] || "") + (u.lastName?.[0] || "")}
+          {users.map(u => {
+            const isDeleted = !!u.deleted_at;
+            return (
+              <tr key={u.id} style={{ opacity: isDeleted ? 0.5 : 1 }}>
+                <td>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 8,
+                      background: isDeleted
+                        ? "#e9ecef"
+                        : "linear-gradient(135deg, #f76707 0%, #e64980 100%)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      color: isDeleted ? "#adb5bd" : "#fff",
+                      fontFamily: "'Nunito', sans-serif", fontSize: 12, fontWeight: 900, flexShrink: 0,
+                    }}>
+                      {(u.firstName?.[0] || "") + (u.lastName?.[0] || "")}
+                    </div>
+                    <div style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 800, fontSize: 14, color: isDeleted ? "#adb5bd" : "#2d1b0e" }}>
+                      {u.firstName} {u.middleName ? u.middleName + " " : ""}{u.lastName}
+                      {u.id === currentUser.id && (
+                        <span style={{ marginLeft: 6, fontSize: 10, background: "#ebfbee", color: "#2b8a3e", fontWeight: 700, borderRadius: 5, padding: "1px 7px" }}>You</span>
+                      )}
+                      {isDeleted && (
+                        <span style={{ marginLeft: 6, fontSize: 10, background: "#fff0f0", color: "#c92a2a", fontWeight: 700, borderRadius: 5, padding: "1px 7px" }}>Deleted</span>
+                      )}
+                    </div>
                   </div>
-                  <div style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 800, fontSize: 14, color: "#2d1b0e" }}>
-                    {u.firstName} {u.middleName ? u.middleName + " " : ""}{u.lastName}
-                    {u.id === currentUser.id && (
-                      <span style={{ marginLeft: 6, fontSize: 10, background: "#ebfbee", color: "#2b8a3e", fontWeight: 700, borderRadius: 5, padding: "1px 7px" }}>You</span>
-                    )}
-                  </div>
-                </div>
-              </td>
-              <td style={{ fontSize: 13, color: "#9b7060" }}>{u.email}</td>
-              <td>
-                <select
-                  className="grade-select"
-                  style={{ width: 120, fontSize: 12, textAlign: "left" }}
-                  value={u.role}
-                  onChange={e => changeRole(u.id, e.target.value)}
-                  disabled={u.id === currentUser.id && u.role === 'superadmin'}
-                >
-                  <option value="teacher">Teacher</option>
-                  <option value="school">School</option>
-                  <option value="superadmin">Super Admin</option>
-                </select>
-              </td>
-              <td style={{ fontSize: 12, color: "#c4a498" }}>
-                {u.created_at ? new Date(u.created_at).toLocaleDateString("en-GB") : "—"}
-              </td>
-              <td>
-                {u.id !== currentUser.id && (
-                  <button className="delete-class-btn" style={{ color: "#ff6b6b" }} onClick={() => deleteUser(u.id)}>
-                    Delete
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
+                </td>
+                <td style={{ fontSize: 13, color: "#9b7060" }}>{u.email}</td>
+                <td>
+                  <select
+                    className="grade-select"
+                    style={{ width: 120, fontSize: 12, textAlign: "left" }}
+                    value={u.role}
+                    onChange={e => changeRole(u.id, e.target.value)}
+                    disabled={isDeleted || (u.id === currentUser.id && u.role === 'superadmin')}
+                  >
+                    <option value="teacher">Teacher</option>
+                    <option value="school">School</option>
+                    <option value="superadmin">Super Admin</option>
+                  </select>
+                </td>
+                <td style={{ fontSize: 12, color: "#9b7060" }}>{isDeleted ? "—" : (u.status || "active")}</td>
+                <td style={{ fontSize: 12, color: "#c4a498" }}>
+                  {u.created_at ? new Date(u.created_at).toLocaleDateString("en-GB") : "—"}
+                </td>
+                <td>
+                  {u.id !== currentUser.id && (
+                    isDeleted
+                      ? <button className="delete-class-btn" style={{ color: "#2b8a3e" }} onClick={() => restoreUser(u.id)}>Restore</button>
+                      : <button className="delete-class-btn" style={{ color: "#ff6b6b" }} onClick={() => deleteUser(u.id)}>Delete</button>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -3676,6 +3905,7 @@ export default function EnglishGenerator() {
   const [tasks, setTasks] = useState(null);
   const [showAnswers, setShowAnswers] = useState(false);
   const [taskType, setTaskType] = useState("match");
+  const [pdfModal, setPdfModal] = useState(false);
 
   const [classes, setClasses] = useState([]);
   const [loaded, setLoaded] = useState(false);
@@ -3717,7 +3947,14 @@ export default function EnglishGenerator() {
   // Debounced Supabase sync for record mutations
   const syncTimers = useRef({});
   const ownerIdRef = useRef(null);
+  const pdfPageRef = useRef(null);
   useEffect(() => { ownerIdRef.current = currentUser?.id; }, [currentUser?.id]);
+
+  useEffect(() => {
+    if (pdfModal) document.body.classList.add('pdf-modal-open');
+    else document.body.classList.remove('pdf-modal-open');
+    return () => document.body.classList.remove('pdf-modal-open');
+  }, [pdfModal]);
 
   const syncRecord = useCallback((classId, data) => {
     clearTimeout(syncTimers.current[classId]);
@@ -3880,6 +4117,23 @@ export default function EnglishGenerator() {
     const result = generateTasks(selectedTopic, count, effectiveType);
     setTasks(result);
     setShowAnswers(false);
+    setPdfModal(true);
+  };
+
+  const handlePrint = () => window.print();
+
+  const handleDownloadPDF = () => {
+    const el = pdfPageRef.current;
+    if (!el) return;
+    const win = window.open('', '_blank');
+    if (!win) { alert('Pop-up blocked — please allow pop-ups for this site.'); return; }
+    win.document.write(`<!DOCTYPE html><html><head>
+<meta charset="utf-8">
+<title>${topic?.emoji || ''} ${topic?.name || 'Worksheet'}</title>
+<style>${styles}</style>
+</head><body style="background:#fff;padding:32px 40px;">${el.innerHTML}</body></html>`);
+    win.document.close();
+    win.onload = () => { win.focus(); win.print(); };
   };
 
   const topic = TOPICS.find(t => t.id === selectedTopic);
@@ -4338,7 +4592,7 @@ export default function EnglishGenerator() {
                       {showAnswers ? "Hide answers" : "Show answers"}
                     </button>
                     <button className="action-btn" onClick={generate}>New set</button>
-                    <button className="action-btn primary" onClick={() => window.print()}>🖨 Print</button>
+                    <button className="action-btn primary" onClick={() => setPdfModal(true)}>🖨 Preview PDF</button>
                   </div>
                 </div>
 
@@ -4366,6 +4620,53 @@ export default function EnglishGenerator() {
               </div>
             )}
           </>
+        )}
+
+        {pdfModal && tasks && topic && (
+          <div className="pdf-modal-overlay">
+            <div className="pdf-modal-header">
+              <span className="pdf-modal-title">📄 {topic.emoji} {topic.name} · Grade {topic.grade}</span>
+              <button className="pdf-action-btn pdf-answers-btn" onClick={() => setShowAnswers(v => !v)}>
+                {showAnswers ? "Hide answers" : "Show answers"}
+              </button>
+              <button className="pdf-action-btn pdf-new-btn" onClick={generate}>
+                ↺ New set
+              </button>
+              <div className="pdf-header-sep" />
+              <button className="pdf-action-btn pdf-print-btn" onClick={handlePrint}>
+                🖨 Print
+              </button>
+              <button className="pdf-action-btn pdf-download-btn" onClick={handleDownloadPDF}>
+                ⬇ Download PDF
+              </button>
+              <div className="pdf-header-sep" />
+              <button className="pdf-action-btn pdf-close-btn" onClick={() => setPdfModal(false)}>
+                ✕ Close
+              </button>
+            </div>
+            <div className="pdf-modal-scroll">
+              <div className="pdf-a4-page" ref={pdfPageRef}>
+                <div className="ws-header">
+                  <div>
+                    <div className="ws-badge">Grade {topic.grade} · English</div>
+                    <div className="ws-title">{topic.emoji} {topic.name}</div>
+                    <div className="ws-subtitle">{topic.desc}</div>
+                  </div>
+                  <div className="ws-fields">
+                    <div className="ws-field-line">Name: <span>{studentName}</span></div>
+                    {selectedClass && <div className="ws-field-line">Class: <span>{selectedClass.name}</span></div>}
+                    <div className="ws-field-line">Date: <span /></div>
+                    <div className="ws-field-line">Grade: <span /></div>
+                  </div>
+                </div>
+                {tasks.type === "listen-circle" && <ListenCircleTask data={tasks} />}
+                {tasks.type === "color-boxes" && <ColorBoxTask data={tasks} />}
+                {tasks.type === "match" && <MatchTask data={tasks} showAnswers={showAnswers} />}
+                {tasks.type === "fillin" && <FillInTask data={tasks} showAnswers={showAnswers} />}
+                {tasks.type === "tf" && <TrueFalseTask data={tasks} showAnswers={showAnswers} />}
+              </div>
+            </div>
+          </div>
         )}
 
         {profile && (() => {
