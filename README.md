@@ -107,7 +107,7 @@ FEATURE_SCHOOL_TEACHERS=1
 | `records.spec.ts` | Records tab UI — attendance/grade/payment toggles, student profile modal, persistence across reload |
 | `pdf-modal.spec.ts` | PDF preview modal — open/close (button + Escape), answer-key toggle, "New set" regeneration |
 
-See `docs/qa/` for the full test plan, test case specification, and scenario coverage checklist (including known gaps).
+See `docs/qa/` for the full test plan, test case specification, and scenario coverage checklist (including known gaps), plus a standing prioritized [test coverage TODO](docs/qa/test-coverage-todo.md).
 
 ## Database schema
 
@@ -116,6 +116,8 @@ Three core tables, all with Row Level Security:
 - **`profiles`** — id, first/last/middle name, email, role, status, school_id
 - **`classes`** — id (text PK), name, owner_id, students (jsonb array)
 - **`records`** — class_id (PK, cascades from classes), owner_id, data (jsonb: attendance/payment/grades/notes)
+
+`classes.owner_id` and `records.owner_id` both `on delete cascade` from `auth.users` — deleting a user (e.g. a school removing a teacher) permanently deletes every class and record they own, not just their profile. See `docs/qa/test-scenarios.pdf` §5 for the test that verifies this.
 
 Migrations live in `supabase/migrations/`.
 
