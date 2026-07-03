@@ -22,9 +22,6 @@ const ROLE_META = {
 };
 
 
-
-
-
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
 const TRIMESTERS = [
@@ -42,6 +39,12 @@ export default function EnglishGenerator() {
   const [currentUser, setCurrentUser] = useState(null);
   const [authLoaded, setAuthLoaded] = useState(false);
   const [passwordReset, setPasswordReset] = useState(false);
+
+  // onAuthStateChange below is registered once (see the empty dep array on
+  // the effect that follows) and would otherwise close over passwordReset's
+  // initial value forever -- a ref keeps it reading the current value.
+  const passwordResetRef = useRef(passwordReset);
+  useEffect(() => { passwordResetRef.current = passwordReset; }, [passwordReset]);
 
   useEffect(() => {
     // An invited teacher lands on /?setup=1 — show the "set a new password" screen.
@@ -66,7 +69,7 @@ export default function EnglishGenerator() {
       } else if (event === 'PASSWORD_RECOVERY') {
         setPasswordReset(true);
       } else if (session && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
-        if (!passwordReset) {
+        if (!passwordResetRef.current) {
           const profile = await fetchProfile(session.user.id);
           // Don't surface pending/inactive accounts — let handleSubmit show the error
           // and call signOut. Without this guard, SIGNED_IN races with handleSubmit
@@ -146,10 +149,11 @@ export default function EnglishGenerator() {
     clearTimeout(syncTimers.current[classId]);
     syncTimers.current[classId] = setTimeout(async () => {
       if (!ownerIdRef.current) return;
-      await supabase.from('records').upsert(
+      const { error } = await supabase.from('records').upsert(
         { class_id: classId, owner_id: ownerIdRef.current, data, updated_at: new Date().toISOString() },
         { onConflict: 'class_id' }
       );
+      if (error) console.error('Failed to save record:', error);
     }, 800);
   }, []);
 
@@ -260,7 +264,8 @@ export default function EnglishGenerator() {
   };
 
   const deleteClass = async (id) => {
-    await supabase.from('classes').delete().eq('id', id);
+    const { error } = await supabase.from('classes').delete().eq('id', id);
+    if (error) { console.error('Failed to delete class:', error); return; }
     setClasses(prev => prev.filter(c => c.id !== id));
     if (selectedClassId === id) { setSelectedClassId(""); setSelectedStudent(""); }
   };
@@ -271,7 +276,8 @@ export default function EnglishGenerator() {
     const cls = classes.find(c => c.id === classId);
     if (!cls || cls.students.includes(name)) return;
     const newStudents = [...cls.students, name];
-    await supabase.from('classes').update({ students: newStudents }).eq('id', classId);
+    const { error } = await supabase.from('classes').update({ students: newStudents }).eq('id', classId);
+    if (error) { console.error('Failed to add student:', error); return; }
     setClasses(prev => prev.map(c => c.id === classId ? { ...c, students: newStudents } : c));
     setNewStudentInputs(prev => ({ ...prev, [classId]: "" }));
   };
@@ -280,7 +286,8 @@ export default function EnglishGenerator() {
     const cls = classes.find(c => c.id === classId);
     if (!cls) return;
     const newStudents = cls.students.filter(s => s !== name);
-    await supabase.from('classes').update({ students: newStudents }).eq('id', classId);
+    const { error } = await supabase.from('classes').update({ students: newStudents }).eq('id', classId);
+    if (error) { console.error('Failed to remove student:', error); return; }
     setClasses(prev => prev.map(c => c.id === classId ? { ...c, students: newStudents } : c));
   };
 
