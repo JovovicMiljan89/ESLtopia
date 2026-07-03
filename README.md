@@ -1,8 +1,12 @@
 # ESLtopia
 
+[![Daily Playwright Tests](https://github.com/JovovicMiljan89/ESLtopia/actions/workflows/daily-tests.yml/badge.svg)](https://github.com/JovovicMiljan89/ESLtopia/actions/workflows/daily-tests.yml)
+
 AI-powered English worksheet and lesson-content generator for teachers and language schools.
 
 Built with React + Vite, Supabase (auth, database, edge functions), and deployed on Vercel.
+
+**Live app:** [esltopia.vercel.app](https://esltopia.vercel.app) · **QA docs:** [test plan, test cases, scenario checklist](docs/qa/)
 
 ## Features
 
