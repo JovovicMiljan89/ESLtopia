@@ -53,48 +53,55 @@ export default function PdfPreviewModal({
 
   if (!open || !tasks || !topic) return null;
 
+  const exerciseCount = (tasks.items || tasks.pairs || []).length;
+
   return createPortal(
-    <div className="pdf-modal-overlay">
-      <div className="pdf-modal-header">
-        <span className="pdf-modal-title">📄 {topic.emoji} {topic.name} · Grade {topic.grade}</span>
-        <button className="pdf-action-btn pdf-answers-btn" onClick={onToggleAnswers}>
-          {showAnswers ? "Hide answers" : "Show answers"}
-        </button>
-        <button className="pdf-action-btn pdf-new-btn" onClick={onNewSet}>
-          ↺ New set
-        </button>
-        <div className="pdf-header-sep" />
-        <button className="pdf-action-btn pdf-print-btn" onClick={handlePrint}>
-          🖨 Print
-        </button>
-        <button className="pdf-action-btn pdf-download-btn" onClick={handleDownloadPDF}>
-          ⬇ Download PDF
-        </button>
-        <div className="pdf-header-sep" />
-        <button className="pdf-action-btn pdf-close-btn" onClick={onClose}>
-          ✕ Close
-        </button>
-      </div>
-      <div className="pdf-modal-scroll" ref={pdfScrollRef}>
-        <div className="pdf-a4-page" key={sheetKey} ref={pdfPageRef}>
-          <div className="ws-header">
-            <div>
-              <div className="ws-badge">Grade {topic.grade} · English</div>
-              <div className="ws-title">{topic.emoji} {topic.name}</div>
-              <div className="ws-subtitle">{topic.desc}</div>
-            </div>
-            <div className="ws-fields">
-              <div className="ws-field-line">Name: <span>{studentName}</span></div>
-              {selectedClass && <div className="ws-field-line">Class: <span>{selectedClass.name}</span></div>}
-              <div className="ws-field-line">Date: <span /></div>
-              <div className="ws-field-line">Grade: <span /></div>
-            </div>
+    <div className="pdf-modal-overlay" onClick={onClose}>
+      <div className="pdf-modal-card" onClick={(e) => e.stopPropagation()}>
+        <div className="pdf-modal-header">
+          <div className="pdf-modal-icon">{topic.emoji}</div>
+          <div className="pdf-modal-heading">
+            <div className="pdf-modal-title">{topic.name}</div>
+            <div className="pdf-modal-subtitle">Grade {topic.grade} · {exerciseCount} exercises</div>
           </div>
-          {tasks.type === "listen-circle" && <ListenCircleTask data={tasks} />}
-          {tasks.type === "color-boxes" && <ColorBoxTask data={tasks} />}
-          {tasks.type === "match" && <MatchTask data={tasks} showAnswers={showAnswers} />}
-          {tasks.type === "fillin" && <FillInTask data={tasks} showAnswers={showAnswers} />}
-          {tasks.type === "tf" && <TrueFalseTask data={tasks} showAnswers={showAnswers} />}
+          <button className="pdf-modal-close" onClick={onClose} title="Close (Esc)">✕</button>
+        </div>
+
+        <div className="pdf-modal-actionbar">
+          <button
+            className={`pdf-answer-toggle${showAnswers ? " active" : ""}`}
+            onClick={onToggleAnswers}
+          >
+            <span className="pdf-answer-track"><span className="pdf-answer-thumb" /></span>
+            Answer key
+          </button>
+          <button className="pdf-ghost-btn" onClick={onNewSet}>↺ New set</button>
+          <div className="pdf-actionbar-spacer" />
+          <button className="pdf-outline-btn" onClick={handlePrint}>🖨 Print</button>
+          <button className="pdf-primary-btn" onClick={handleDownloadPDF}>⬇ Download PDF</button>
+        </div>
+
+        <div className="pdf-modal-scroll" ref={pdfScrollRef}>
+          <div className="pdf-a4-page" key={sheetKey} ref={pdfPageRef}>
+            <div className="ws-header">
+              <div>
+                <div className="ws-badge">Grade {topic.grade} · English</div>
+                <div className="ws-title">{topic.emoji} {topic.name}</div>
+                <div className="ws-subtitle">{topic.desc}</div>
+              </div>
+              <div className="ws-fields">
+                <div className="ws-field-line">Name: <span>{studentName}</span></div>
+                {selectedClass && <div className="ws-field-line">Class: <span>{selectedClass.name}</span></div>}
+                <div className="ws-field-line">Date: <span /></div>
+                <div className="ws-field-line">Grade: <span /></div>
+              </div>
+            </div>
+            {tasks.type === "listen-circle" && <ListenCircleTask data={tasks} />}
+            {tasks.type === "color-boxes" && <ColorBoxTask data={tasks} />}
+            {tasks.type === "match" && <MatchTask data={tasks} showAnswers={showAnswers} />}
+            {tasks.type === "fillin" && <FillInTask data={tasks} showAnswers={showAnswers} />}
+            {tasks.type === "tf" && <TrueFalseTask data={tasks} showAnswers={showAnswers} />}
+          </div>
         </div>
       </div>
     </div>,
