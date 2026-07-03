@@ -8,6 +8,12 @@ Built with React + Vite, Supabase (auth, database, edge functions), and deployed
 
 **Live app:** [esltopia.vercel.app](https://esltopia.vercel.app) · **QA docs:** [test plan, test cases, scenario checklist](docs/qa/)
 
+<p align="center">
+  <img src="docs/screenshots/auth-screen.png" alt="Sign-in screen" width="46%">
+  &nbsp;
+  <img src="docs/screenshots/pdf-preview-modal.png" alt="PDF worksheet preview modal" width="46%">
+</p>
+
 ## Features
 
 - AI-generated worksheets and exercises (match, fill-in, true/false, listen & circle, color boxes)
