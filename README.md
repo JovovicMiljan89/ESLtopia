@@ -94,6 +94,10 @@ FEATURE_SCHOOL_TEACHERS=1
 | `school-teachers.spec.ts` | School creates/manages/removes teachers, edge-function error handling |
 | `classes.spec.ts` | Classes & records CRUD, student management, RLS isolation, cascade delete, superadmin full access |
 | `profile.spec.ts` | Profile self-update (name fields), trigger protection (role change blocked), cross-user RLS |
+| `records.spec.ts` | Records tab UI — attendance/grade/payment toggles, student profile modal, persistence across reload |
+| `pdf-modal.spec.ts` | PDF preview modal — open/close (button + Escape), answer-key toggle, "New set" regeneration |
+
+See `docs/qa/` for the full test plan, test case specification, and scenario coverage checklist (including known gaps).
 
 ## Database schema
 
@@ -107,11 +111,20 @@ Migrations live in `supabase/migrations/`.
 
 ## Deployment
 
-Push to `main` → Vercel builds and deploys automatically via GitHub integration.
+Deploys are **not** automatic on push — pushing to `main` only updates the git history. To ship a frontend change:
 
 ```bash
-git push origin main
+git push origin main   # source of truth, but does not trigger a build
+vercel --prod --yes    # actually deploys to https://esltopia.vercel.app
 ```
+
+Verify the deploy landed by checking that the bundle hash changed:
+
+```bash
+curl -s https://esltopia.vercel.app/ | grep -o 'assets/index-[A-Za-z0-9]*\.js'
+```
+
+Database/edge-function changes are deployed separately via the Supabase CLI (`supabase db push`, `supabase functions deploy`).
 
 ## CI
 
