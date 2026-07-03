@@ -15,6 +15,7 @@ import {
   createConfirmedUser,
   getAccessToken,
   getProfile,
+  setProfileRole,
   setProfileSchoolId,
   setProfileStatus,
   uniqueEmail,
@@ -284,6 +285,96 @@ if (!ENABLED) {
       });
       expect(status).toBeGreaterThanOrEqual(400);
       expect(status).toBeLessThan(600);
+    });
+
+    // Scenario gap flagged in docs/qa/test-scenarios.pdf §5 (2026-07-03 code review):
+    // manage-teacher's "remove" action deletes the teacher's auth.users row, which
+    // cascades (classes.owner_id / records.owner_id both `on delete cascade` from
+    // auth.users) to permanently delete every class and record that teacher owns.
+    // The existing happy-path test never gave the teacher any data to lose, so it
+    // never actually exercised the cascade.
+    test('removing a teacher cascades to delete their classes and records', async ({ request }) => {
+      const schoolEmail = uniqueEmail('st-cascade-school');
+      const teacherEmail = uniqueEmail('st-cascade-teacher');
+      const adminEmail = uniqueEmail('st-cascade-admin');
+      await createConfirmedUser({ email: schoolEmail, password: PASSWORD, role: 'school' });
+      await createConfirmedUser({ email: teacherEmail, password: PASSWORD, role: 'teacher' });
+      // Superadmin used only to read the class/record rows after the teacher (and
+      // their own token) no longer exist -- RLS otherwise scopes them to the owner.
+      await createConfirmedUser({ email: adminEmail, password: PASSWORD, role: 'teacher' });
+      await getProfile(adminEmail);
+      await setProfileRole(adminEmail, 'superadmin');
+
+      const school = await getProfile(schoolEmail);
+      const teacher = await getProfile(teacherEmail);
+      await setProfileSchoolId(teacherEmail, school!.id);
+
+      const teacherToken = await getAccessToken(teacherEmail, PASSWORD);
+      const classId = `c_test_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+      const classHeaders = {
+        apikey: ANON_KEY,
+        Authorization: `Bearer ${teacherToken}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      };
+      const classRes = await request.post(`${SUPABASE_URL}/rest/v1/classes`, {
+        headers: classHeaders,
+        data: { id: classId, name: 'Cascade Test Class', owner_id: teacher!.id, students: ['Alice'] },
+      });
+      expect(classRes.status(), await classRes.text()).toBe(201);
+
+      const recordRes = await request.post(`${SUPABASE_URL}/rest/v1/records`, {
+        headers: { ...classHeaders, Prefer: 'return=representation,resolution=merge-duplicates' },
+        data: { class_id: classId, owner_id: teacher!.id, data: { attendance: {}, payment: {}, grades: {} }, updated_at: new Date().toISOString() },
+      });
+      expect(recordRes.status(), await recordRes.text()).toBe(201);
+
+      // Precondition: both rows genuinely exist before removal.
+      const adminToken = await getAccessToken(adminEmail, PASSWORD);
+      const adminHeaders = { apikey: ANON_KEY, Authorization: `Bearer ${adminToken}` };
+      const classBefore = await request.get(`${SUPABASE_URL}/rest/v1/classes?id=eq.${classId}`, { headers: adminHeaders });
+      expect((await classBefore.json() as unknown[]).length).toBe(1);
+      const recordBefore = await request.get(`${SUPABASE_URL}/rest/v1/records?class_id=eq.${classId}`, { headers: adminHeaders });
+      expect((await recordBefore.json() as unknown[]).length).toBe(1);
+
+      const schoolToken = await getAccessToken(schoolEmail, PASSWORD);
+      const { status, body } = await invoke(request, 'manage-teacher', schoolToken, {
+        teacherId: teacher?.id,
+        action: 'remove',
+      });
+      expect(status, JSON.stringify(body)).toBe(200);
+
+      expect(await getProfile(teacherEmail)).toBeNull();
+      const classAfter = await request.get(`${SUPABASE_URL}/rest/v1/classes?id=eq.${classId}`, { headers: adminHeaders });
+      expect((await classAfter.json() as unknown[]).length).toBe(0);
+      const recordAfter = await request.get(`${SUPABASE_URL}/rest/v1/records?class_id=eq.${classId}`, { headers: adminHeaders });
+      expect((await recordAfter.json() as unknown[]).length).toBe(0);
+    });
+
+    test('remove-teacher confirm dialog discloses class/record deletion', async ({ page }) => {
+      const schoolEmail = uniqueEmail('st-dialog-school');
+      const teacherEmail = uniqueEmail('st-dialog-teacher');
+      await createConfirmedUser({ email: schoolEmail, password: PASSWORD, role: 'school' });
+      await createConfirmedUser({ email: teacherEmail, password: PASSWORD, role: 'teacher' });
+      const school = await getProfile(schoolEmail);
+      await setProfileSchoolId(teacherEmail, school!.id);
+
+      await loginToApp(page, schoolEmail, PASSWORD);
+      await page.locator('button.tab', { hasText: 'Employees' }).click();
+      await expect(page.getByText(teacherEmail)).toBeVisible();
+
+      let dialogMessage = '';
+      page.once('dialog', async (dialog) => {
+        dialogMessage = dialog.message();
+        await dialog.dismiss(); // don't actually remove the teacher in this test
+      });
+      await page.locator('tr', { hasText: teacherEmail }).getByRole('button', { name: 'Remove' }).click();
+
+      await expect.poll(() => dialogMessage).toContain('classes');
+      expect(dialogMessage).toContain('records');
+      expect(dialogMessage).toContain('cannot be undone');
+      // Dismissed, so the teacher must still exist.
+      expect(await getProfile(teacherEmail)).not.toBeNull();
     });
   });
 }
