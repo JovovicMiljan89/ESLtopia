@@ -4,31 +4,6 @@ import Logo from './Logo.jsx';
 import PdfPreviewModal from './PdfPreviewModal.jsx';
 import { shuffle, ListenCircleTask, ColorBoxTask, MatchTask, FillInTask, TrueFalseTask } from './WorksheetTasks.jsx';
 
-const storage = {
-  async get(key) {
-    if (typeof window !== "undefined" && window.storage && window.storage.get) {
-      return await window.storage.get(key);
-    }
-    try {
-      const v = localStorage.getItem(key);
-      return v != null ? { value: v } : null;
-    } catch (e) {
-      return null;
-    }
-  },
-  async set(key, value) {
-    if (typeof window !== "undefined" && window.storage && window.storage.set) {
-      return await window.storage.set(key, value);
-    }
-    try {
-      localStorage.setItem(key, value);
-      return { value };
-    } catch (e) {
-      return null;
-    }
-  },
-};
-
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap');
 
