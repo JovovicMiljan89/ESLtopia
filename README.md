@@ -2,7 +2,7 @@
 
 [![Daily Playwright Tests](https://github.com/JovovicMiljan89/ESLtopia/actions/workflows/daily-tests.yml/badge.svg)](https://github.com/JovovicMiljan89/ESLtopia/actions/workflows/daily-tests.yml)
 
-AI-powered English worksheet and lesson-content generator for teachers and language schools.
+English worksheet and lesson-content generator for teachers and language schools, with a randomized template engine covering 24 topics across grades 1–6.
 
 Built with React + Vite, Supabase (auth, database, edge functions), and deployed on Vercel.
 
@@ -16,7 +16,7 @@ Built with React + Vite, Supabase (auth, database, edge functions), and deployed
 
 ## Features
 
-- AI-generated worksheets and exercises (match, fill-in, true/false, listen & circle, color boxes)
+- Randomized worksheets and exercises from a curated content bank (match, fill-in, true/false, listen & circle, color boxes)
 - Class and student management — create classes, add/remove students
 - Attendance, payment, and grade tracking per student per class
 - Student profile modal with trimester summaries
@@ -142,3 +142,7 @@ GitHub Actions runs two scheduled workflows:
 
 - **daily-tests** — full Playwright suite against production every day at 13:00 UTC
 - **daily-registrations** — new-user report emailed every day at 09:00 UTC
+
+## License
+
+[MIT](LICENSE)
