@@ -5,12 +5,11 @@
 //   * Superadmin sees the Admin tab; teachers and schools do not.
 //   * Superadmin can read all profiles via RLS.
 //   * Superadmin can update any profile's role via RLS.
-//   * Superadmin cannot delete another user's profile via REST — the schema
-//     has no DELETE policy for superadmin on profiles, so PostgREST silently
-//     drops the request (200 but 0 rows affected). If this test fails it means
-//     a DELETE policy has been added and removal now works end-to-end.
-//   * Superadmin cannot delete themselves (UI-level guard; no Delete button on
-//     their own row).
+//   * Superadmin can delete another user's profile via REST (DELETE policy
+//     added in 20260630000000_superadmin_rls_fix.sql).
+//   * Superadmin cannot delete themselves — enforced by that same policy's
+//     `id != auth.uid()` clause, and separately by a UI-level guard (no
+//     Delete button on their own row).
 //   * Superadmin calling manage-teacher is rejected with 403 because that edge
 //     function is scoped to School accounts only (gated on FEATURE_SCHOOL_TEACHERS).
 //
@@ -18,7 +17,7 @@
 // unknown role to 'teacher'. Test users are created as teachers and promoted
 // via setProfileRole (service-role client, exempt from the column guard).
 
-import { test, expect, type APIRequestContext } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import {
   createConfirmedUser,
   getProfile,
@@ -27,30 +26,11 @@ import {
   uniqueEmail,
 } from '../helpers/cleanup';
 import { loginToApp } from '../helpers/ui';
+import { invokeEdgeFunction as invokeEdgeFn } from '../helpers/edgeFunctions';
 
 const PASSWORD = 'Test1234!';
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? '';
 const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY ?? '';
-
-async function invokeEdgeFn(
-  request: APIRequestContext,
-  fn: string,
-  token: string,
-  payload: unknown,
-) {
-  const res = await request.post(`${SUPABASE_URL}/functions/v1/${fn}`, {
-    headers: {
-      apikey: ANON_KEY,
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    data: payload,
-    failOnStatusCode: false,
-  });
-  let body: unknown = null;
-  try { body = await res.json(); } catch { /* ignore */ }
-  return { status: res.status(), body };
-}
 
 // ─── UI: Admin tab ────────────────────────────────────────────────────────────
 

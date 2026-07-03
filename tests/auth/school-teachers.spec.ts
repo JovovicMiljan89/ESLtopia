@@ -10,7 +10,7 @@
 // Until then they are skipped. After deploying, enable them by setting
 // FEATURE_SCHOOL_TEACHERS=1 in .env.test.local and run `npm test`.
 
-import { test, expect, type APIRequestContext } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import {
   createConfirmedUser,
   getAccessToken,
@@ -20,35 +20,17 @@ import {
   uniqueEmail,
 } from '../helpers/cleanup';
 import { loginToApp } from '../helpers/ui';
+import { invokeEdgeFunction as invoke } from '../helpers/edgeFunctions';
 
 // create-teacher sends an invite email (Supabase → Mailtrap), whose sandbox
 // rate-limits sends — retry to ride out transient "Error sending invite email".
 test.describe.configure({ retries: 2 });
 
-const ENABLED = process.env.FEATURE_SCHOOL_TEACHERS === '1';
-const PASSWORD = 'Test1234!';
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? '';
 const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY ?? '';
 
-async function invoke(
-  request: APIRequestContext,
-  fn: string,
-  token: string,
-  payload: unknown,
-) {
-  const res = await request.post(`${SUPABASE_URL}/functions/v1/${fn}`, {
-    headers: {
-      apikey: ANON_KEY,
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    data: payload,
-    failOnStatusCode: false,
-  });
-  let body: unknown = null;
-  try { body = await res.json(); } catch { /* ignore */ }
-  return { status: res.status(), body };
-}
+const ENABLED = process.env.FEATURE_SCHOOL_TEACHERS === '1';
+const PASSWORD = 'Test1234!';
 
 if (!ENABLED) {
   test('school → teachers feature (skipped until deployed)', () => {
