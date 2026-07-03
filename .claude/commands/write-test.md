@@ -12,8 +12,9 @@ Write a new Playwright E2E spec for the english-app project based on the user's 
 - **Test runner**: Playwright `@playwright/test` — TypeScript, `tests/` directory
 - **Config**: `playwright.config.ts` — tests run against `https://esltopia.vercel.app` (or `$BASE_URL`), Chromium only, `fullyParallel: true`, global teardown purges `@example.test` users
 - **Shared helpers**:
-  - `tests/helpers/cleanup.ts` — `createConfirmedUser`, `getProfile`, `confirmUser`, `setProfileStatus`, `getAccessToken`, `generateRecoveryLink`, `deleteTestUsers`, `uniqueEmail`
+  - `tests/helpers/cleanup.ts` — `createConfirmedUser`, `getProfile`, `confirmUser`, `setProfileStatus`, `setProfileRole`, `setProfileSchoolId`, `getAccessToken`, `generateRecoveryLink`, `deleteTestUsers`, `uniqueEmail`
   - `tests/helpers/ui.ts` — `loginToApp(page, email, password)` (logs in and clicks "Get started")
+  - `tests/helpers/edgeFunctions.ts` — `invokeEdgeFunction(request, fn, token, payload)` for calling Supabase Edge Functions
 
 ## Rules for new tests
 
@@ -21,10 +22,10 @@ Write a new Playwright E2E spec for the english-app project based on the user's 
 2. **Create fixture users with `createConfirmedUser`** in `test.beforeAll` — never go through the UI signup flow to set up a fixture.
 3. **Use `loginToApp(page, email, password)` from `../helpers/ui`** whenever you need a fully-authenticated session in the app shell. Only write the login form manually when the test is specifically about the login form.
 4. **One `test.describe` per logical feature area.** Tests within a describe share a `beforeAll` for fixture setup.
-5. **Test file location**: place new specs in `tests/auth/` for auth-related tests. Create a new subdirectory (e.g. `tests/worksheet/`) for non-auth features.
+5. **Test file location**: place new specs in `tests/auth/` for auth-related tests, `tests/app/` for everything else (classes, records, profile, PDF modal, and any future non-auth feature — this is the established convention, not a hypothetical new subdirectory per feature).
 6. **File naming**: `kebab-case.spec.ts`
 7. **No fixture state shared between describe blocks** — each describe block sets up its own users.
-8. **Edge function tests** use the `invoke(request, fn, token, payload)` pattern from `school-teachers.spec.ts` rather than Playwright's `page`.
+8. **Edge function tests** use `invokeEdgeFunction(request, fn, token, payload)` from `../helpers/edgeFunctions` rather than Playwright's `page`.
 9. **No comments explaining what the code does** — only add comments for non-obvious WHY (e.g., why we use the admin API instead of the UI).
 10. **Retries**: add `test.describe.configure({ retries: 2 })` only when the test involves external SMTP (invite emails, registration confirmation).
 

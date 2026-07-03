@@ -38,12 +38,15 @@ Perform a thorough code review of the english-app project. Review **$ARGUMENTS**
 - **Idempotency**: migrations must use `create ... if not exists` / `drop ... if exists` / `alter ... add column if not exists`.
 - **Cascade behaviour**: verify `on delete` rules are intentional (cascade vs. set null vs. restrict).
 
-### 5. React component (`src/EnglishGenerator.jsx`)
+### 5. React components (`src/`)
+
+`src/EnglishGenerator.jsx` was split into focused modules on 2026-07-03 (`AuthScreen.jsx`, `AdminPanel.jsx`, `EmployeesPanel.jsx`, `LandingPage.jsx`, `PdfPreviewModal.jsx`, `WorksheetTasks.jsx`, `worksheetContent.js`, `profileHelpers.js`, `styles.js`, plus the ~950-line orchestrator itself) — review all of them, not just the main file.
 
 - **Dead code**: any function, variable, or branch that is never reached.
-- **State management**: `useState` and `useEffect` hooks should not have missing or incorrect dependencies.
+- **State management**: `useState` and `useEffect` hooks should not have missing or incorrect dependencies (watch for stale closures in effects with empty dependency arrays that read state from an outer scope).
 - **Supabase calls**: all `supabase.*` calls should handle the error case and not silently swallow errors.
 - **Security**: no user-supplied values should be interpolated into SQL or used as RLS bypass vectors.
+- **Data-loss risks**: destructive actions (deletes, cascades) must have UI warnings that accurately describe their actual blast radius, not just their most obvious effect.
 
 ### 6. Config files (`playwright.config.ts`, `vite.config.js`, `vercel.json`)
 
