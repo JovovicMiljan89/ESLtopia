@@ -166,6 +166,55 @@ test.describe('Records tab: attendance, grades, and payment', () => {
     await expect(rowAfterReload.getByRole('button', { name: 'Paid' })).toBeVisible();
   });
 
+  // Scenario gap flagged in docs/qa/test-scenarios.pdf §7 (2026-07-03 code review):
+  // syncRecord now logs a failed upsert instead of discarding it silently, but
+  // nothing verified that path actually fires -- or that logging isn't mistaken
+  // for the write having actually succeeded.
+  test('a failed record save is logged to the console and is not silently persisted', async ({ page }) => {
+    const className = uniqueClassName('Sync failure');
+    await createTestClass(token, teacherId, className, ['Ana Ilic']);
+
+    await loginToApp(page, teacherEmail, PASSWORD);
+    await openRecordsTab(page, className);
+
+    const consoleErrors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
+    });
+
+    // Force the debounced upsert to fail the way a real Supabase error response
+    // does (RLS denial / server error) -- a resolved {error}, not a thrown
+    // network exception -- without touching the GET that loads existing records.
+    await page.route('**/rest/v1/records*', async (route) => {
+      if (['POST', 'PATCH', 'PUT'].includes(route.request().method())) {
+        await route.fulfill({
+          status: 500,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'simulated failure', code: '500' }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+
+    const row = page.locator('.records-table tbody tr', { hasText: 'Ana Ilic' });
+    await row.getByRole('button', { name: 'Absent' }).click();
+    await expect(row.getByRole('button', { name: 'Present' })).toBeVisible(); // optimistic local update
+
+    await expect.poll(
+      () => consoleErrors.some((m) => m.includes('Failed to save record')),
+      { timeout: 5_000 },
+    ).toBe(true);
+
+    // The debounced write never actually reached the server -- remove the
+    // interception so a fresh load reads real server state, and confirm the
+    // "Present" mark was lost. Logging the failure doesn't make it durable.
+    await page.unroute('**/rest/v1/records*');
+    await reloadIntoRecordsTab(page, className);
+    const rowAfterReload = page.locator('.records-table tbody tr', { hasText: 'Ana Ilic' });
+    await expect(rowAfterReload.getByRole('button', { name: 'Absent' })).toBeVisible();
+  });
+
   test('opening a student profile shows their attendance stats and saves a note', async ({ page }) => {
     const className = uniqueClassName('Student profile');
     await createTestClass(token, teacherId, className, ['Marko Jovic']);
