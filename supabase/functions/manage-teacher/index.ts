@@ -3,7 +3,13 @@
 // A School account deactivates, reactivates, or removes one of ITS OWN teachers.
 //   - deactivate: bans the auth account (blocks login) + status 'inactive'
 //   - reactivate: lifts the ban + status 'active'
-//   - remove:     deletes the auth account (cascades to the profile)
+//   - remove:     deletes the auth account, which cascades (via `on delete
+//                 cascade` foreign keys) to the teacher's profile AND to
+//                 every class and record they own -- classes.owner_id and
+//                 records.owner_id both cascade from auth.users. This is a
+//                 permanent, unrecoverable deletion of that teacher's entire
+//                 gradebook, not just their login. The caller-facing confirm
+//                 dialog (EmployeesPanel.jsx) must say so explicitly.
 //
 // Auth: caller must be an authenticated, active School user, and the target
 // teacher must belong to that school.

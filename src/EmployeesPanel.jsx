@@ -54,7 +54,7 @@ export default function EmployeesPanel({ currentUser }) {
   };
 
   const manage = async (teacherId, action) => {
-    if (action === 'remove' && !window.confirm("Remove this teacher? This permanently deletes their account.")) return;
+    if (action === 'remove' && !window.confirm("Remove this teacher? This permanently deletes their account, and ALL of their classes, students, attendance, grades, and payment records. This cannot be undone.")) return;
     setError(""); setNotice("");
     const { data, error: fnErr } = await supabase.functions.invoke('manage-teacher', {
       body: { teacherId, action },
