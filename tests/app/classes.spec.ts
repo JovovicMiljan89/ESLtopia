@@ -205,11 +205,30 @@ test.describe('classes: RLS isolation', () => {
     expect((await res.json() as unknown[]).length).toBe(0);
   });
 
+  test("teacher cannot insert a class with another teacher's owner_id (RLS blocks it)", async ({ request }) => {
+    const id = uniqueClassId();
+    const res = await request.post(`${SUPABASE_URL}/rest/v1/classes`, {
+      headers: h(tokenB, { Prefer: 'return=representation' }),
+      data: { id, name: 'Forged Owner Class', owner_id: teacherAId, students: [] },
+      failOnStatusCode: false,
+    });
+    expect(res.status()).toBe(403);
+
+    const check = await request.get(
+      `${SUPABASE_URL}/rest/v1/classes?id=eq.${id}`,
+      { headers: h(tokenA) },
+    );
+    expect((await check.json() as unknown[]).length).toBe(0);
+  });
+
   test("teacher cannot delete another teacher's class (RLS blocks it)", async ({ request }) => {
-    await request.delete(
+    const del = await request.delete(
       `${SUPABASE_URL}/rest/v1/classes?id=eq.${classId}`,
       { headers: h(tokenB), failOnStatusCode: false },
     );
+    // RLS filters the row out of the USING clause rather than raising an
+    // error — PostgREST reports success (204, no rows matched) either way.
+    expect(del.status()).toBe(204);
 
     // Class must still be visible to Teacher A
     const check = await request.get(
@@ -282,11 +301,9 @@ test.describe('records: CRUD', () => {
     const res = await request.post(`${SUPABASE_URL}/rest/v1/records`, {
       headers: h(token, { Prefer: 'return=representation,resolution=merge-duplicates' }),
       data: { class_id: classId, owner_id: teacherId, data: updated, updated_at: new Date().toISOString() },
-      failOnStatusCode: false,
     });
-    // merge-duplicates on an existing row → 200 or 201 depending on PostgREST version
-    expect(res.status()).toBeGreaterThanOrEqual(200);
-    expect(res.status()).toBeLessThan(300);
+    // merge-duplicates on an existing row is an UPDATE under the hood → 200
+    expect(res.status()).toBe(200);
     const rows = await res.json() as Array<{ data: Record<string, unknown> }>;
     expect((rows[0].data as any).payment?.['2026-07']?.Alice).toBe(true);
   });
