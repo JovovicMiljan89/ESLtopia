@@ -1,0 +1,52 @@
+name: Update Visual Regression Baselines
+
+# Manual-only: regenerates tests/visual/*-snapshots/ on the same ubuntu-latest
+# runner `daily-tests` uses, so the committed baselines match what CI's
+# Chromium actually renders. Screenshots taken on a different OS (e.g. a
+# contributor's Windows/macOS machine) render fonts differently and would
+# make every visual-regression test fail on the next daily-tests run.
+#
+# Usage: run this workflow, download the "visual-baselines" artifact from the
+# run, and replace tests/visual/visual-regression.spec.ts-snapshots/ with its
+# contents before committing.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-baselines:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Create .env.test.local
+        run: |
+          printf 'VITE_SUPABASE_URL=%s\nVITE_SUPABASE_ANON_KEY=%s\nSUPABASE_SERVICE_ROLE_KEY=%s\n' \
+            "$VITE_SUPABASE_URL" \
+            "$VITE_SUPABASE_ANON_KEY" \
+            "$SUPABASE_SERVICE_ROLE_KEY" > .env.test.local
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Generate baseline screenshots
+        run: npx playwright test tests/visual --update-snapshots
+
+      - name: Upload baseline snapshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-baselines
+          path: tests/visual/visual-regression.spec.ts-snapshots/
+          retention-days: 7
