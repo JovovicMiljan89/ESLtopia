@@ -11,7 +11,9 @@
     "test:ui": "playwright test --ui",
     "test:report": "playwright show-report",
     "test:visual": "playwright test tests/visual",
-    "test:visual:update": "playwright test tests/visual --update-snapshots"
+    "test:visual:update": "playwright test tests/visual --update-snapshots",
+    "loadtest:login": "k6 run loadtests/login-load-test.js",
+    "loadtest:records": "k6 run loadtests/records-write-load-test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
