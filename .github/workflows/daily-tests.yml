@@ -5,6 +5,9 @@ on:
     - cron: '0 13 * * *'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   test-and-report:
     runs-on: ubuntu-latest
@@ -35,6 +38,8 @@ jobs:
 
       - name: Run Playwright tests
         run: npx playwright test 2>&1 | tee test-output.txt || true
+        env:
+          FEATURE_SCHOOL_TEACHERS: '1'
 
       - name: Send email report
         run: |
@@ -42,3 +47,27 @@ jobs:
           node scripts/send-test-report.mjs
         env:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+
+      # Publish the same HTML report `npm run test:report` shows locally, so
+      # anyone can see the latest results without opening the Actions tab.
+      # Runs even when tests fail -- a red report is still the truth.
+      - name: Upload Playwright report to Pages artifact
+        if: always()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: playwright-report/
+
+  deploy-report:
+    needs: test-and-report
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy report to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

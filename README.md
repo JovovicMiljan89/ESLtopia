@@ -1,6 +1,6 @@
 # ESLtopia
 
-[![Daily Playwright Tests](https://github.com/JovovicMiljan89/ESLtopia/actions/workflows/daily-tests.yml/badge.svg)](https://github.com/JovovicMiljan89/ESLtopia/actions/workflows/daily-tests.yml)
+[![Daily Playwright Tests](https://github.com/JovovicMiljan89/ESLtopia/actions/workflows/daily-tests.yml/badge.svg)](https://github.com/JovovicMiljan89/ESLtopia/actions/workflows/daily-tests.yml) · [📊 View latest test report](https://jovovicmiljan89.github.io/ESLtopia/)
 
 English worksheet and lesson-content generator for teachers and language schools, with a randomized template engine covering 24 topics across grades 1–6.
 
