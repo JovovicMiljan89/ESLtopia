@@ -276,16 +276,10 @@ test.describe('superadmin: RLS — update any profile role', () => {
 
 // ─── API: profile delete ──────────────────────────────────────────────────────
 //
-// NOTE: The schema currently has no DELETE RLS policy for superadmin on
-// profiles (only SELECT and UPDATE). PostgREST responds 200 but deletes 0
-// rows, so the "can delete" test below will FAIL until a policy is added:
-//
-//   create policy "Superadmin can delete any profile"
-//     on public.profiles for delete using (get_my_role() = 'superadmin');
-//
-// The "cannot delete themselves" test documents that self-deletion is blocked
-// regardless of the RLS state (the UI skips the delete call for own user;
-// at the API level, whether it's blocked depends on policy).
+// DELETE RLS policy added in 20260630000000_superadmin_rls_fix.sql (see file
+// header above). The "cannot delete themselves" test verifies that policy's
+// `id != auth.uid()` clause independently of the UI-level guard (no Delete
+// button on the superadmin's own row).
 
 test.describe('superadmin: profile delete via REST', () => {
   const adminEmail = uniqueEmail('sa-del-admin');
