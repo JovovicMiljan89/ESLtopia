@@ -10,7 +10,7 @@
 // email link, so the test works regardless of which SMTP provider production uses.
 
 import { test, expect } from '@playwright/test';
-import { confirmUser, getProfile, uniqueEmail } from '../helpers/cleanup';
+import { confirmUser, createConfirmedUser, getProfile, uniqueEmail } from '../helpers/cleanup';
 
 // Signup still sends a confirmation email synchronously, which can be
 // slow/throttled — retry to ride out transient send failures.
@@ -189,6 +189,24 @@ test.describe('API: POST /auth/v1/signup', () => {
     const profile = await getProfile(email);
     expect(profile?.role).not.toBe('superadmin');
     expect(profile?.role).toBe('teacher');
+  });
+
+  test('duplicate (already-registered) email → 200 with empty identities (anti-enumeration)', async ({ request }) => {
+    // GoTrue doesn't reject a duplicate signup outright — that would let a
+    // caller enumerate registered addresses. It returns the same 200 shape
+    // as a fresh signup, but `identities` is empty (no new identity created)
+    // instead of containing the new-identity object a fresh signup gets.
+    const email = uniqueEmail('api-dup');
+    await createConfirmedUser({ email, password: PASSWORD });
+
+    const res = await request.post(`${SUPABASE_URL}/auth/v1/signup`, {
+      headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
+      data: { email, password: PASSWORD, data: { role: 'teacher', first_name: 'Dup', last_name: 'Signup' } },
+      failOnStatusCode: false,
+    });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    expect(body.identities).toEqual([]);
   });
 
   test('password below minimum length → 422', async ({ request }) => {

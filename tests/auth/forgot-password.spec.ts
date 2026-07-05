@@ -14,7 +14,9 @@
 // contention with the registration spec under parallel runs.
 
 import { test, expect } from '@playwright/test';
-import { uniqueEmail } from '../helpers/cleanup';
+import { createConfirmedUser, uniqueEmail } from '../helpers/cleanup';
+
+const PASSWORD = 'Test1234!';
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? '';
 const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY ?? '';
@@ -68,10 +70,15 @@ test.describe('API: POST /auth/v1/recover', () => {
 
   test('registered email → same 200 as non-existent (anti-enumeration)', async ({ request }) => {
     // Both registered and unregistered addresses return 200 — callers cannot
-    // distinguish which emails exist.
+    // distinguish which emails exist. Create a real user first so this test
+    // actually exercises the registered-email path rather than duplicating
+    // the non-existent-email case above.
+    const email = uniqueEmail('recover-registered');
+    await createConfirmedUser({ email, password: PASSWORD });
+
     const res = await request.post(`${SUPABASE_URL}/auth/v1/recover`, {
       headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
-      data: { email: uniqueEmail('recover-registered') },
+      data: { email },
       failOnStatusCode: false,
     });
     expect(res.status()).toBe(200);
