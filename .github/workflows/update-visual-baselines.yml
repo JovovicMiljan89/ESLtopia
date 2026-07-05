@@ -12,6 +12,12 @@ name: Update Visual Regression Baselines
 
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'update: regenerate baselines. verify: run against committed baselines without changing them.'
+        type: choice
+        options: [update, verify]
+        default: update
 
 jobs:
   update-baselines:
@@ -42,11 +48,25 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
       - name: Generate baseline screenshots
+        if: inputs.mode == 'update'
         run: npx playwright test tests/visual --update-snapshots
 
+      - name: Verify against committed baselines
+        if: inputs.mode == 'verify'
+        run: npx playwright test tests/visual
+
       - name: Upload baseline snapshots
+        if: inputs.mode == 'update'
         uses: actions/upload-artifact@v4
         with:
           name: visual-baselines
           path: tests/visual/visual-regression.spec.ts-snapshots/
+          retention-days: 7
+
+      - name: Upload Playwright report
+        if: always() && inputs.mode == 'verify'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
           retention-days: 7
