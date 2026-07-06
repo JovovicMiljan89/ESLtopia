@@ -204,3 +204,37 @@ test.describe('API: POST /auth/v1/token (refresh_token grant)', () => {
     expect(res.status()).toBe(400);
   });
 });
+
+// ─── API: rate limiting ─────────────────────────────────────────────────────
+//
+// Gap flagged in docs/qa/test-coverage-todo.md: no test exercised repeated
+// failed attempts against Supabase's own limiter on the password grant
+// endpoint. Kept to a small burst (5 requests) rather than dozens, since this
+// hits the same production project/IP as the rest of the suite and a bigger
+// burst risks tripping a rate-limit bucket that other tests in the same run
+// would then also pay for.
+
+test.describe('API: repeated failed password attempts', () => {
+  test('a burst of wrong-password attempts is always rejected -- never a 5xx, never a silent 200', async ({ request }) => {
+    const statuses: number[] = [];
+    for (let i = 0; i < 5; i++) {
+      const res = await request.post(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
+        data: { email: EMAIL, password: `DefinitelyWrong!${i}` },
+        failOnStatusCode: false,
+      });
+      statuses.push(res.status());
+    }
+
+    // Documents whatever Supabase actually does under a burst -- reject every
+    // attempt (400) throughout, start throttling (429), or something in
+    // between -- without gambling the test's pass/fail on a specific
+    // threshold we don't control. The invariant that must always hold
+    // regardless: a wrong password never succeeds, and the server never 500s.
+    for (const status of statuses) {
+      expect(status).not.toBe(200);
+      expect(status).toBeLessThan(500);
+    }
+    console.log(`[rate-limit] password-grant burst statuses: ${statuses.join(', ')}`);
+  });
+});

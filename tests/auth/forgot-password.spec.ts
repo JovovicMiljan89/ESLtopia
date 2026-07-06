@@ -104,3 +104,37 @@ test.describe('API: POST /auth/v1/recover', () => {
     expect(res.status()).toBe(401);
   });
 });
+
+// ─── API: rate limiting ─────────────────────────────────────────────────────
+//
+// Gap flagged in docs/qa/test-coverage-todo.md: no test exercised repeated
+// requests against Supabase's own limiter on the recovery endpoint. Reuses
+// one address across the burst (rather than a fresh one per request) since
+// that's the scenario worth checking -- a user, or an attacker, mashing
+// "send reset link" for the same account.
+
+test.describe('API: repeated recovery requests to the same address', () => {
+  test('a burst of recovery requests is accepted or throttled, never a 5xx', async ({ request }) => {
+    const email = uniqueEmail('recover-burst');
+    const statuses: number[] = [];
+    for (let i = 0; i < 4; i++) {
+      const res = await request.post(`${SUPABASE_URL}/auth/v1/recover`, {
+        headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
+        data: { email },
+        failOnStatusCode: false,
+      });
+      statuses.push(res.status());
+    }
+
+    // Documents whatever Supabase actually does under a burst to one address
+    // -- keep returning 200 throughout, or start throttling with 429 once a
+    // per-email cooldown kicks in -- without asserting a specific threshold
+    // we don't control. Either is an acceptable, documented outcome; a 5xx
+    // is not.
+    expect(statuses[0]).toBe(200);
+    for (const status of statuses) {
+      expect([200, 429]).toContain(status);
+    }
+    console.log(`[rate-limit] recover burst statuses (same address): ${statuses.join(', ')}`);
+  });
+});

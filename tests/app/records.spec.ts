@@ -237,4 +237,26 @@ test.describe('Records tab: attendance, grades, and payment', () => {
     await page.locator('.student-link', { hasText: 'Marko Jovic' }).click();
     await expect(page.locator('.notes-area')).toHaveValue('Great progress this term.');
   });
+
+  // XSS/HTML-injection resilience gap flagged in docs/qa/test-coverage-todo.md:
+  // notes render inside a <textarea> value, which is never HTML-parsed regardless
+  // of framework, but nothing previously verified the round trip stores and
+  // redisplays markup as literal text rather than, say, stripping or mangling it.
+  test('a note containing HTML markup is stored and redisplayed as literal text', async ({ page }) => {
+    const className = uniqueClassName('XSS note');
+    await createTestClass(token, teacherId, className, ['Ana Ilic']);
+    const payload = '<b>bold</b> <script>window.__xssFired = true;</script>';
+
+    await loginToApp(page, teacherEmail, PASSWORD);
+    await openRecordsTab(page, className);
+
+    await page.locator('.student-link', { hasText: 'Ana Ilic' }).click();
+    await page.locator('.notes-area').fill(payload);
+    await page.waitForTimeout(1_500);
+    await reloadIntoRecordsTab(page, className);
+
+    await page.locator('.student-link', { hasText: 'Ana Ilic' }).click();
+    await expect(page.locator('.notes-area')).toHaveValue(payload);
+    expect(await page.evaluate(() => (window as unknown as { __xssFired?: boolean }).__xssFired)).toBeUndefined();
+  });
 });

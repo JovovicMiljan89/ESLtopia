@@ -2,15 +2,15 @@
 
 A standing, prioritized backlog of scenarios not yet covered by the automated suite, consolidated from `test-scenarios.pdf`. Check items off there too (flip the row from `GAP`/`PARTIAL` to `AUTOMATED`) when closing one here, and keep the case/module counts in `test-cases.pdf` and `test-plan.pdf` in sync — see their revision-note conventions.
 
-Last synced: 2026-07-06, against Test Scenario Coverage Checklist v1.4.
+Last synced: 2026-07-06, against Test Scenario Coverage Checklist v1.5.
+
+v1.5 sync note: all three former High-priority items below are now closed — see `tests/app/classes-ui.spec.ts` (CLSUI-01–06, Classes tab UI click-through + XSS in class/student names), `tests/app/records.spec.ts` (RECUI-09, XSS in notes), and the new burst tests in `tests/auth/login.spec.ts` (LOGIN-17) / `tests/auth/forgot-password.spec.ts` (FPW-08). One finding worth flagging on its own: the rate-limiting tests observed **no lockout or 429 within a 4–5 request burst on either endpoint** as of 2026-07-06 — that's a product-level fact (no brute-force protection currently active), not just a closed test gap. It's tracked as a risk in the Test Plan §11 and as a `PARTIAL` (not `AUTOMATED`) row in the Scenario Checklist §1, since the test documents current behavior rather than confirming protection exists.
 
 v1.4 sync note: this pass was a doc-accuracy correction only, not new coverage — three things that already existed in `tests/` (the visual-regression suite, REG-11 anti-enumeration, CLS-08 RLS-insert-forgery) were missing from the QA docs and are now reflected there. CLS IDs above CLS-07 shifted by one (old CLS-08–15 → CLS-09–16); the reference below is updated accordingly. None of the gaps listed here were closed by this sync.
 
 ## High priority
 
-- [ ] **Classes tab UI click-through** — create a class via the "add class" form, add/remove a student via the roster input, delete a class via its button. All three are REST-tested (`CLS-01–09`) but never clicked through the real UI. Mirrors the pattern already used in `tests/app/records.spec.ts`.
-- [ ] **XSS/HTML-injection resilience** in free-text fields (student names, class names, notes). React escapes by default, but nothing explicitly verifies it — worth one test injecting `<script>`/HTML markup into a student name and confirming it renders as literal text, not markup.
-- [ ] **Rate limiting / brute-force protection** on `/auth/v1/token` and `/auth/v1/recover`. No test exercises repeated failed attempts against Supabase's own limiter — worth confirming the behavior exists and what it does (lockout? delay? nothing?).
+None currently — the three items previously here (Classes tab UI click-through, XSS/HTML-injection resilience, rate-limiting behavior) were all closed 2026-07-06. See the v1.5 sync note above for the one follow-up worth tracking as a product risk rather than a test gap.
 
 ## Medium priority
 
