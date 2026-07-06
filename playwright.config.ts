@@ -38,14 +38,38 @@ export default defineConfig({
       //   - tests/visual/**: toHaveScreenshot() baselines only exist for
       //     Chromium (see the Test Plan) -- Firefox/WebKit would fail on a
       //     missing baseline, not a real regression.
+      //   - registration.spec.ts / forgot-password.spec.ts / school-teachers.spec.ts:
+      //     these trigger real Supabase-sent emails (signup confirmation,
+      //     recovery, teacher invites), which share one global rate-limit
+      //     bucket. Running them under every engine triples that email
+      //     volume within a single CI run -- confirmed in production to
+      //     exhaust the limit and fail school-teachers.spec.ts on whichever
+      //     engine runs last ("email rate limit exceeded", 2026-07-06). Their
+      //     assertions are almost entirely API/business-logic, not
+      //     engine-dependent rendering, so Chromium-only coverage is the
+      //     right tradeoff.
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
-      testIgnore: ['**/app/classes.spec.ts', '**/app/profile.spec.ts', '**/visual/**'],
+      testIgnore: [
+        '**/app/classes.spec.ts',
+        '**/app/profile.spec.ts',
+        '**/visual/**',
+        '**/auth/registration.spec.ts',
+        '**/auth/forgot-password.spec.ts',
+        '**/auth/school-teachers.spec.ts',
+      ],
     },
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
-      testIgnore: ['**/app/classes.spec.ts', '**/app/profile.spec.ts', '**/visual/**'],
+      testIgnore: [
+        '**/app/classes.spec.ts',
+        '**/app/profile.spec.ts',
+        '**/visual/**',
+        '**/auth/registration.spec.ts',
+        '**/auth/forgot-password.spec.ts',
+        '**/auth/school-teachers.spec.ts',
+      ],
     },
   ],
 
