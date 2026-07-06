@@ -29,6 +29,24 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    {
+      // Cross-browser coverage for UI-rendering tests only. Excluded here:
+      //   - classes.spec.ts / profile.spec.ts: pure REST/RLS assertions via
+      //     the `request` fixture, no page rendering at all -- running them
+      //     under every engine would just re-send identical HTTP calls three
+      //     times for zero additional signal.
+      //   - tests/visual/**: toHaveScreenshot() baselines only exist for
+      //     Chromium (see the Test Plan) -- Firefox/WebKit would fail on a
+      //     missing baseline, not a real regression.
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+      testIgnore: ['**/app/classes.spec.ts', '**/app/profile.spec.ts', '**/visual/**'],
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+      testIgnore: ['**/app/classes.spec.ts', '**/app/profile.spec.ts', '**/visual/**'],
+    },
   ],
 
   // No webServer: tests hit a live deployment, not a local dev server.

@@ -2,7 +2,9 @@
 
 A standing, prioritized backlog of scenarios not yet covered by the automated suite, consolidated from `test-scenarios.pdf`. Check items off there too (flip the row from `GAP`/`PARTIAL` to `AUTOMATED`) when closing one here, and keep the case/module counts in `test-cases.pdf` and `test-plan.pdf` in sync — see their revision-note conventions.
 
-Last synced: 2026-07-06, against Test Scenario Coverage Checklist v1.5.
+Last synced: 2026-07-06, against Test Scenario Coverage Checklist v1.6.
+
+v1.6 sync note: cross-browser coverage (previously in "Lower priority / harder to automate") is closed — `playwright.config.ts` now has `firefox` and `webkit` projects running the same suite (minus `classes.spec.ts`/`profile.spec.ts`, which are pure REST with no page rendering, and `tests/visual/`, whose baselines are Chromium-only). All 234 Firefox/WebKit executions pass; one failure and one flake seen in an initial run were confirmed by isolated reruns to be pre-existing parallel-load flakiness, not real per-browser bugs. Mobile viewport emulation was not attempted and remains open if it's ever wanted.
 
 v1.5 sync note: all three former High-priority items below are now closed — see `tests/app/classes-ui.spec.ts` (CLSUI-01–06, Classes tab UI click-through + XSS in class/student names), `tests/app/records.spec.ts` (RECUI-09, XSS in notes), and the new burst tests in `tests/auth/login.spec.ts` (LOGIN-17) / `tests/auth/forgot-password.spec.ts` (FPW-08). One finding worth flagging on its own: the rate-limiting tests observed **no lockout or 429 within a 4–5 request burst on either endpoint** as of 2026-07-06 — that's a product-level fact (no brute-force protection currently active), not just a closed test gap. It's tracked as a risk in the Test Plan §11 and as a `PARTIAL` (not `AUTOMATED`) row in the Scenario Checklist §1, since the test documents current behavior rather than confirming protection exists.
 
@@ -27,7 +29,7 @@ None currently — the three items previously here (Classes tab UI click-through
 ## Lower priority / harder to automate
 
 - [ ] **PDF modal**: Print button's actual `window.print()` + print-CSS behavior, Download PDF's new-tab content, pop-up-blocked fallback alert, scroll-reset-on-New-set. All awkward to assert headlessly; consider Playwright's print-emulation APIs if this becomes worth the effort.
-- [ ] **Cross-browser coverage** (Firefox, WebKit/Safari, mobile browsers) — Chromium only today; would need `playwright.config.ts` project changes.
+- [ ] **Mobile browser/viewport emulation** — desktop Chromium/Firefox/WebKit are covered (2026-07-06); mobile viewports (Playwright's `devices['iPhone...']`/`devices['Pixel...']`) are not.
 - [ ] **Responsive/mobile layout** at the 860px and 480px CSS breakpoints — no viewport-sized visual assertions exist.
 - [ ] **Accessibility** — screen-reader labeling, full keyboard navigation, color contrast. Only incidental keyboard support (Escape-to-close) is covered.
 - [ ] **Performance under load** (many classes/students/records for one teacher) — no defined SLA for this ~10-user portfolio app.
