@@ -2,7 +2,9 @@
 
 A standing, prioritized backlog of scenarios not yet covered by the automated suite, consolidated from `test-scenarios.pdf`. Check items off there too (flip the row from `GAP`/`PARTIAL` to `AUTOMATED`) when closing one here, and keep the case/module counts in `test-cases.pdf` and `test-plan.pdf` in sync — see their revision-note conventions.
 
-Last synced: 2026-07-06, against Test Scenario Coverage Checklist v1.6.
+Last synced: 2026-07-06, against Test Scenario Coverage Checklist v1.7.
+
+v1.7 sync note: a live CI run (triggered manually to verify v1.6's cross-browser setup before trusting it) failed 5 `school-teachers.spec.ts` cases on WebKit with a real `{"error":"email rate limit exceeded"}` — three engines sending real invite emails in one run exhausted Supabase's shared email rate-limit bucket. `registration.spec.ts` and `forgot-password.spec.ts` share the same real-email mechanism and were preemptively excluded too. All three are now Chromium-only for cross-browser, same as `classes.spec.ts`/`profile.spec.ts`/`tests/visual/`. Re-verified with a second live CI run: 304 passed, 0 failed. This is the kind of thing worth remembering for any future addition to the cross-browser matrix: check whether the file sends real email before adding it.
 
 v1.6 sync note: cross-browser coverage (previously in "Lower priority / harder to automate") is closed — `playwright.config.ts` now has `firefox` and `webkit` projects running the same suite (minus `classes.spec.ts`/`profile.spec.ts`, which are pure REST with no page rendering, and `tests/visual/`, whose baselines are Chromium-only). All 234 Firefox/WebKit executions pass; one failure and one flake seen in an initial run were confirmed by isolated reruns to be pre-existing parallel-load flakiness, not real per-browser bugs. Mobile viewport emulation was not attempted and remains open if it's ever wanted.
 
