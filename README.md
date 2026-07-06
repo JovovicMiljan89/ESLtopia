@@ -55,16 +55,32 @@ Tests run against the deployed production URL by default.
 
 ```bash
 # one-time setup
-npx playwright install chromium
+npx playwright install chromium firefox webkit
 
-# run all tests
+# run everything (all 3 browsers)
 npm test
+
+# fast loop: Chromium only
+npm run test:chromium
+
+# just Firefox + WebKit
+npm run test:cross-browser
+
+# visual-regression suite only (baselines are Chromium/Linux-only — see docs/qa/)
+npm run test:visual
 
 # run with Playwright UI (watch mode)
 npm run test:ui
 
 # open the last HTML report
 npm run test:report
+```
+
+Load testing (k6, against `login` and `records` write paths):
+
+```bash
+npm run loadtest:login
+npm run loadtest:records
 ```
 
 ### Required env for tests
@@ -91,23 +107,33 @@ FEATURE_SCHOOL_TEACHERS=1
 
 ## Test coverage
 
+**144 automated test cases across 15 spec files**, run against the live production app — not a local mock:
+
+- **Cross-browser**: Chromium, Firefox, and WebKit, wired into CI and runnable individually (`npm run test:chromium` / `test:cross-browser`)
+- **Security-first**: RLS/privilege-escalation coverage for every role boundary and table — cross-teacher data isolation on read *and* write (forged `owner_id` on insert), self-promotion to superadmin blocked, cascade deletes verified end-to-end
+- **Visual regression**: pixel-diff snapshots of 4 key screens (`toHaveScreenshot`, 2% tolerance), Chromium/Linux baselines refreshed via a dedicated CI workflow
+- **XSS/HTML-injection resilience**: explicit `<script>`/`<img onerror>` injection tests on every free-text field (class names, student names, notes)
+- **Rate-limit behavior**: burst tests against the login and password-recovery endpoints, documenting actual production behavior rather than assuming it
+- **Load testing**: k6 scripts for the login and record-write paths (`npm run loadtest:login` / `loadtest:records`)
+- Full QA paper trail: a versioned [Master Test Plan](docs/qa/test-plan.pdf), [Test Case Specification](docs/qa/test-cases.pdf), and [Scenario Coverage Checklist](docs/qa/test-scenarios.pdf) — each with a revision history tracking exactly what changed and why — plus a standing, prioritized [test coverage TODO](docs/qa/test-coverage-todo.md) for what isn't covered yet
+
 | Spec | What it covers |
 |---|---|
-| `login.spec.ts` | UI login, password/email validation, API token grant (password + refresh) |
-| `registration.spec.ts` | UI signup (teacher + school), form validation, API signup, DB trigger role defaults |
+| `login.spec.ts` | UI login, password/email validation, API token grant (password + refresh), rate-limit burst behavior |
+| `registration.spec.ts` | UI signup (teacher + school), form validation, API signup, DB trigger role defaults, anti-enumeration |
 | `logout.spec.ts` | UI sign-out, API logout, session invalidation |
-| `forgot-password.spec.ts` | UI forgot-password form, API recover endpoint |
+| `forgot-password.spec.ts` | UI forgot-password form, API recover endpoint, rate-limit burst behavior |
 | `password-reset.spec.ts` | Recovery link flow, validation, single-use enforcement |
 | `roles.spec.ts` | Superadmin coercion, admin portal access, account status restrictions, JWT claims, privilege escalation via REST |
 | `navigation.spec.ts` | Auth guards, session persistence across reload, deactivated-account eviction |
 | `superadmin.spec.ts` | Admin tab access, profile read/update/delete RLS, role promotion, Admin panel UI |
 | `school-teachers.spec.ts` | School creates/manages/removes teachers, edge-function error handling |
-| `classes.spec.ts` | Classes & records CRUD, student management, RLS isolation, cascade delete, superadmin full access |
+| `classes.spec.ts` | Classes & records CRUD, student management, RLS isolation (read/delete *and* insert-forgery), cascade delete, superadmin full access |
+| `classes-ui.spec.ts` | Classes tab UI click-through — create/roster add-remove/delete via the real form; XSS resilience in class and student names |
 | `profile.spec.ts` | Profile self-update (name fields), trigger protection (role change blocked), cross-user RLS |
-| `records.spec.ts` | Records tab UI — attendance/grade/payment toggles, student profile modal, persistence across reload |
+| `records.spec.ts` | Records tab UI — attendance/grade/payment toggles, student profile modal, persistence across reload, failed-save handling, XSS resilience in notes |
 | `pdf-modal.spec.ts` | PDF preview modal — open/close (button + Escape), answer-key toggle, "New set" regeneration |
-
-See `docs/qa/` for the full test plan, test case specification, and scenario coverage checklist (including known gaps), plus a standing prioritized [test coverage TODO](docs/qa/test-coverage-todo.md).
+| `visual-regression.spec.ts` | Pixel-diff snapshots of the login screen, dashboard, worksheet generator settings, and PDF modal |
 
 ## Database schema
 
@@ -142,7 +168,7 @@ Database/edge-function changes are deployed separately via the Supabase CLI (`su
 
 GitHub Actions runs two scheduled workflows:
 
-- **daily-tests** — full Playwright suite against production every day at 13:00 UTC
+- **daily-tests** — full Playwright suite (Chromium, Firefox, WebKit) against production every day at 13:00 UTC
 - **daily-registrations** — new-user report emailed every day at 09:00 UTC
 
 ## License
