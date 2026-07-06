@@ -155,25 +155,41 @@ export async function setProfileRole(email: string, role: string): Promise<void>
   if (authError) throw new Error(`setProfileRole (auth sync) failed: ${authError.message}`);
 }
 
-/** Sign in via the password grant and return the access token (for invoking edge functions).
- *  Retries with linear backoff on 429 (Supabase auth rate limit). */
-export async function getAccessToken(email: string, password: string): Promise<string> {
+/**
+ * POST to Supabase's /auth/v1/token endpoint with an arbitrary grant query and
+ * body, retrying with linear backoff on 429 (Supabase auth rate limit). Under
+ * heavy parallel/cross-browser local runs, the token endpoint's real rate
+ * limiter does eventually trip -- callers that hit it directly with `request`
+ * instead of this helper see it as a raw, un-retried 429 (or a downstream
+ * crash if they assume a token is always present). Returns the status and
+ * parsed body so callers can assert on either, rather than throwing on a
+ * non-2xx the way getAccessToken below does.
+ */
+export async function postAuthToken(
+  grantQuery: string,
+  body: Record<string, unknown>,
+): Promise<{ status: number; body: Record<string, unknown> }> {
   for (let attempt = 0; attempt < 5; attempt++) {
-    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?${grantQuery}`, {
       method: 'POST',
       headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email.toLowerCase(), password }),
+      body: JSON.stringify(body),
     });
     if (res.status === 429) {
       await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
       continue;
     }
-    if (!res.ok) throw new Error(`getAccessToken failed: HTTP ${res.status}`);
-    const body = await res.json();
-    if (!body.access_token) throw new Error('getAccessToken: no access_token returned');
-    return body.access_token as string;
+    return { status: res.status, body: await res.json().catch(() => ({})) };
   }
-  throw new Error('getAccessToken: rate limited after 5 attempts');
+  throw new Error('postAuthToken: rate limited after 5 attempts');
+}
+
+/** Sign in via the password grant and return the access token (for invoking edge functions). */
+export async function getAccessToken(email: string, password: string): Promise<string> {
+  const { status, body } = await postAuthToken('grant_type=password', { email: email.toLowerCase(), password });
+  if (status !== 200) throw new Error(`getAccessToken failed: HTTP ${status}`);
+  if (!body.access_token) throw new Error('getAccessToken: no access_token returned');
+  return body.access_token as string;
 }
 
 /**

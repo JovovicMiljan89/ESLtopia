@@ -8,7 +8,7 @@
 // Users are cleaned up by the global teardown (all @example.test users).
 
 import { test, expect, type Page } from '@playwright/test';
-import { createConfirmedUser, uniqueEmail } from '../helpers/cleanup';
+import { createConfirmedUser, postAuthToken, uniqueEmail } from '../helpers/cleanup';
 
 const PASSWORD = 'Test1234!';
 const EMAIL = uniqueEmail('login');
@@ -157,51 +157,35 @@ test('unconfirmed user cannot log in', async ({ page, request }) => {
 // ─── API: token refresh ───────────────────────────────────────────────────────
 
 test.describe('API: POST /auth/v1/token (refresh_token grant)', () => {
-  test('valid refresh_token → new access_token and refresh_token', async ({ request }) => {
-    const loginRes = await request.post(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
-      data: { email: EMAIL, password: PASSWORD },
-    });
-    const { refresh_token } = await loginRes.json();
+  // Uses postAuthToken (retries with backoff on 429) rather than the request
+  // fixture directly -- under a full local cross-browser run, the token
+  // endpoint's real rate limiter does eventually trip, and an un-retried call
+  // here would see a raw 429 where a 200/400 was expected.
+  test('valid refresh_token → new access_token and refresh_token', async () => {
+    const { body: loginBody } = await postAuthToken('grant_type=password', { email: EMAIL, password: PASSWORD });
 
-    const res = await request.post(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
-      headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
-      data: { refresh_token },
-    });
-    expect(res.status()).toBe(200);
-    const body = await res.json();
+    const { status, body } = await postAuthToken('grant_type=refresh_token', { refresh_token: loginBody.refresh_token });
+    expect(status).toBe(200);
     expect(body.access_token).toBeTruthy();
     expect(body.refresh_token).toBeTruthy();
     expect(body.token_type).toBe('bearer');
   });
 
-  test('invalid refresh_token → 400', async ({ request }) => {
-    const res = await request.post(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
-      headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
-      data: { refresh_token: 'not-a-real-refresh-token' },
-      failOnStatusCode: false,
-    });
-    expect(res.status()).toBe(400);
+  test('invalid refresh_token → 400', async () => {
+    const { status } = await postAuthToken('grant_type=refresh_token', { refresh_token: 'not-a-real-refresh-token' });
+    expect(status).toBe(400);
   });
 
   test('refresh_token is invalidated after logout', async ({ request }) => {
-    const loginRes = await request.post(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
-      data: { email: EMAIL, password: PASSWORD },
-    });
-    const { access_token, refresh_token } = await loginRes.json();
+    const { body: loginBody } = await postAuthToken('grant_type=password', { email: EMAIL, password: PASSWORD });
 
     await request.post(`${SUPABASE_URL}/auth/v1/logout`, {
-      headers: { apikey: ANON_KEY, Authorization: `Bearer ${access_token}` },
+      headers: { apikey: ANON_KEY, Authorization: `Bearer ${loginBody.access_token}` },
       failOnStatusCode: false,
     });
 
-    const res = await request.post(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
-      headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
-      data: { refresh_token },
-      failOnStatusCode: false,
-    });
-    expect(res.status()).toBe(400);
+    const { status } = await postAuthToken('grant_type=refresh_token', { refresh_token: loginBody.refresh_token });
+    expect(status).toBe(400);
   });
 });
 

@@ -121,12 +121,14 @@ test.describe('API: JWT payload claims', () => {
     await createConfirmedUser({ email: jwtEmail, password: PASSWORD, role: 'teacher' });
   });
 
-  test('access token contains email, UUID sub, and authenticated role', async ({ request }) => {
-    const res = await request.post(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
-      data: { email: jwtEmail, password: PASSWORD },
-    });
-    const { access_token } = await res.json();
+  // Each test below fetches its own token via getAccessToken (retries with
+  // backoff on 429) rather than a raw request.post -- under a full local
+  // cross-browser run, the token endpoint's real rate limiter does eventually
+  // trip, and an un-retried call here previously crashed decodeJwtPayload with
+  // an undefined token instead of failing with a readable error.
+
+  test('access token contains email, UUID sub, and authenticated role', async () => {
+    const access_token = await getAccessToken(jwtEmail, PASSWORD);
     const payload = decodeJwtPayload(access_token);
 
     expect(payload.email).toBe(jwtEmail.toLowerCase());
@@ -135,34 +137,22 @@ test.describe('API: JWT payload claims', () => {
     expect(payload.role).toBe('authenticated');
   });
 
-  test('user_metadata.role reflects the role passed at signup', async ({ request }) => {
-    const res = await request.post(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
-      data: { email: jwtEmail, password: PASSWORD },
-    });
-    const { access_token } = await res.json();
+  test('user_metadata.role reflects the role passed at signup', async () => {
+    const access_token = await getAccessToken(jwtEmail, PASSWORD);
     const payload = decodeJwtPayload(access_token);
 
     expect((payload.user_metadata as Record<string, unknown>)?.role).toBe('teacher');
   });
 
-  test('token expiry (exp) is in the future', async ({ request }) => {
-    const res = await request.post(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
-      data: { email: jwtEmail, password: PASSWORD },
-    });
-    const { access_token } = await res.json();
+  test('token expiry (exp) is in the future', async () => {
+    const access_token = await getAccessToken(jwtEmail, PASSWORD);
     const { exp } = decodeJwtPayload(access_token) as { exp: number };
 
     expect(exp).toBeGreaterThan(Math.floor(Date.now() / 1000));
   });
 
   test('GET /auth/v1/user returns the same user as the token subject', async ({ request }) => {
-    const tokenRes = await request.post(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
-      data: { email: jwtEmail, password: PASSWORD },
-    });
-    const { access_token } = await tokenRes.json();
+    const access_token = await getAccessToken(jwtEmail, PASSWORD);
     const { sub } = decodeJwtPayload(access_token) as { sub: string };
 
     const userRes = await request.get(`${SUPABASE_URL}/auth/v1/user`, {
@@ -247,12 +237,8 @@ test.describe('API: school JWT payload claims', () => {
     await createConfirmedUser({ email: schoolEmail, password: PASSWORD, role: 'school' });
   });
 
-  test('school access token has user_metadata.role: school', async ({ request }) => {
-    const res = await request.post(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
-      data: { email: schoolEmail, password: PASSWORD },
-    });
-    const { access_token } = await res.json();
+  test('school access token has user_metadata.role: school', async () => {
+    const access_token = await getAccessToken(schoolEmail, PASSWORD);
     const payload = decodeJwtPayload(access_token);
 
     expect((payload.user_metadata as Record<string, unknown>)?.role).toBe('school');
