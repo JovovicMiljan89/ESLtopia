@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { ListenCircleTask, ColorBoxTask, MatchTask, FillInTask, TrueFalseTask, OddOneOutTask, CircleWordTask } from "./WorksheetTasks.jsx";
+import { ListenCircleTask, ColorBoxTask, MatchTask, FillInTask, TrueFalseTask, OddOneOutTask, CircleWordTask, PictureShadowTask, TraceLettersTask } from "./WorksheetTasks.jsx";
 
 export default function PdfPreviewModal({
   open,
@@ -53,7 +53,7 @@ export default function PdfPreviewModal({
 
   if (!open || !sections || !topic) return null;
 
-  const exerciseCount = sections.reduce((sum, s) => sum + (s.items || s.pairs || s.groups || []).length, 0);
+  const exerciseCount = sections.reduce((sum, s) => sum + (s.items || s.pairs || s.groups || s.letters || []).length, 0);
 
   return createPortal(
     <div className="pdf-modal-overlay" onClick={onClose}>
@@ -106,6 +106,8 @@ export default function PdfPreviewModal({
                 {sec.type === "tf" && <TrueFalseTask data={sec} showAnswers={showAnswers} />}
                 {sec.type === "odd-one-out" && <OddOneOutTask data={sec} showAnswers={showAnswers} />}
                 {sec.type === "circle-word" && <CircleWordTask data={sec} showAnswers={showAnswers} />}
+                {sec.type === "picture-shadow" && <PictureShadowTask data={sec} showAnswers={showAnswers} />}
+                {sec.type === "trace-letters" && <TraceLettersTask data={sec} />}
               </div>
             ))}
           </div>

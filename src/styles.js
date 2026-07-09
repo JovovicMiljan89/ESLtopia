@@ -1672,6 +1672,38 @@ export const styles = `
     color: #2b8a3e;
   }
 
+  .match-col-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #c4a498;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .shadow-match-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+
+  .trace-letters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .trace-letter-cell {
+    border: 1.5px solid #fff0e8;
+    border-radius: 14px;
+    background: #fffdfb;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .trace-letter-svg { width: 100%; height: 110px; }
+
   .teacher-note {
     margin-top: 10px;
     padding: 8px 12px;

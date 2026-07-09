@@ -12,6 +12,80 @@ export function shuffle(arr) {
   return result;
 }
 
+export function PictureShadowTask({ data, showAnswers }) {
+  const [shuffledRight] = useState(() =>
+    shuffle(data.pairs.map((p, i) => ({ src: p.outline, originalIndex: i })))
+  );
+  return (
+    <div>
+      <div className="section-title">Poveži sliku sa senkom 🌓</div>
+      <p style={{ fontSize: 13, color: "#9b7060", marginBottom: 16 }}>{data.instruction}</p>
+      <div className="match-grid">
+        <div>
+          <div className="match-col-label">Slika</div>
+          {data.pairs.map((p, i) => (
+            <div className="match-row" key={i}>
+              <span className="match-num">{i + 1}.</span>
+              <img src={p.color} alt={p.word} className="shadow-match-icon" />
+              <span className="match-line" />
+            </div>
+          ))}
+        </div>
+        <div>
+          <div className="match-col-label">Senka</div>
+          {shuffledRight.map((r, i) => (
+            <div className="match-row" key={i} style={{ justifyContent: "flex-start" }}>
+              <span className="match-num">{String.fromCharCode(65 + i)}.</span>
+              <img src={r.src} alt="" className="shadow-match-icon" />
+            </div>
+          ))}
+        </div>
+      </div>
+      {showAnswers && (
+        <div className="answer-key" style={{ marginTop: 20 }}>
+          <div className="answer-key-title">Answer Key</div>
+          <div className="answer-key-grid">
+            {data.pairs.map((_, i) => {
+              const letterIndex = shuffledRight.findIndex(r => r.originalIndex === i);
+              return <span key={i} className="answer-key-item">{i + 1}. → {String.fromCharCode(65 + letterIndex)}</span>;
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function TraceLettersTask({ data }) {
+  return (
+    <div>
+      <div className="section-title">Uvežbaj pisanje ✍️</div>
+      <p style={{ fontSize: 13, color: "#9b7060", marginBottom: 8 }}>{data.instruction}</p>
+      <div className="trace-letters-grid">
+        {data.letters.map((letter, i) => (
+          <div className="trace-letter-cell" key={i}>
+            <svg viewBox="0 0 120 140" className="trace-letter-svg">
+              <text
+                x="60" y="100"
+                textAnchor="middle"
+                fontSize="100"
+                fontFamily="'Nunito', sans-serif"
+                fontWeight="900"
+                fill="none"
+                stroke="#f7a361"
+                strokeWidth="2"
+                strokeDasharray="6,5"
+              >
+                {letter}
+              </text>
+            </svg>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function CircleWordTask({ data, showAnswers }) {
   return (
     <div>

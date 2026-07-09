@@ -1,4 +1,5 @@
 import { shuffle } from './WorksheetTasks.jsx';
+import emojiIconManifest from './emojiIconManifest.json';
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -230,6 +231,53 @@ function buildCircleWord(topicId, count) {
   };
 }
 
+// Resolves an emoji to its OpenMoji color/outline SVG pair (see
+// public/icons/ATTRIBUTION.md) via the Unicode-codepoint manifest built by
+// scripts/build-icon-manifest.mjs. Not every emoji in the app has a match
+// (166/168 do — the two misses are the concatenated multi-digit keycap
+// strings for "eleven"/"twelve", which aren't real single emoji), so this
+// returns null rather than a broken path when there's no entry.
+function iconPaths(emoji) {
+  const hex = emojiIconManifest[emoji];
+  if (!hex) return null;
+  return { color: `/icons/color/${hex}.svg`, outline: `/icons/outline/${hex}.svg` };
+}
+
+// Match the picture to its shadow — the color icon on one side, its own
+// black-outline "shadow" (shuffled) on the other. Purely visual, no reading
+// needed, so unlike circle-word this applies to every grade including 1-2.
+function buildPictureShadow(topicId, count) {
+  if (!ODD_ONE_OUT_TOPIC_IDS.includes(topicId)) return null;
+  const pool = getFullWordPool(topicId);
+  const withIcons = pool.map(w => ({ word: w.word, icons: iconPaths(w.emoji) })).filter(w => w.icons);
+  if (withIcons.length < 4) return null;
+
+  const chosen = shuffle(withIcons).slice(0, Math.min(count, withIcons.length));
+  return {
+    type: "picture-shadow",
+    instruction: "Poveži svaku sliku sa njenom senkom.",
+    pairs: chosen.map(w => ({ word: w.word, color: w.icons.color, outline: w.icons.outline })),
+  };
+}
+
+// Trace the letters — Alphabet only. Dashed-stroke SVG text, not a font
+// file: KG Primary Dots/National Primary Dotted (the fonts people usually
+// reach for) are free for personal use only and would need a paid license
+// for use in this app (see the earlier asset-sourcing pass). An SVG
+// stroke-dasharray outline needs no font at all and has none of the
+// rendering risk -webkit-text-stroke had (see the flashcard color-in fix —
+// that was a genuine Chromium fringing bug with CSS text-stroke; SVG path
+// stroking is a different, more predictable code path).
+function buildTraceLetters(topicId, count) {
+  if (topicId !== "alphabet") return null;
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  return {
+    type: "trace-letters",
+    instruction: "Prevuci olovkom preko isprekidane linije da uvežbaš pisanje slova.",
+    letters: shuffle(letters).slice(0, Math.min(count, letters.length)),
+  };
+}
+
 // A worksheet is one topic's generate() output (the "primary" task) plus a
 // second task built generically from the same word/sentence pool, so a
 // worksheet is more than a single 10-item task without hand-authoring extra
@@ -265,6 +313,10 @@ export function generateWorksheet(topicId, count) {
     if (oddOneOut) sections.push(oddOneOut);
     const circleWord = buildCircleWord(topicId, Math.max(4, Math.min(8, count)));
     if (circleWord) sections.push(circleWord);
+    const pictureShadow = buildPictureShadow(topicId, Math.max(4, Math.min(8, count)));
+    if (pictureShadow) sections.push(pictureShadow);
+    const traceLetters = buildTraceLetters(topicId, Math.min(count, 10));
+    if (traceLetters) sections.push(traceLetters);
   } else if (primary.type === "match") {
     sections.push(makeTFFromPairs(primary.pairs, primary.pairs.length));
   } else if (primary.type === "fillin") {
