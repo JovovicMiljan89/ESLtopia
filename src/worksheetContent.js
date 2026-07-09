@@ -13,24 +13,34 @@ export const TOPICS = [
   { id: "am_is_are", emoji: "✏️", name: "am / is / are", desc: "Mickey is happy — glagol to be", grade: "2" },
   { id: "a_an", emoji: "📝", name: "a / an", desc: "Neodređeni član — Stars & Heroes", grade: "2" },
   { id: "classroom", emoji: "🏫", name: "Classroom", desc: "Učionica — Stars & Heroes", grade: "2" },
+  { id: "toys", emoji: "🧸", name: "Toys", desc: "Igračke — Mickey & friends", grade: "2" },
+  { id: "my_home", emoji: "🏠", name: "My home", desc: "Moj dom — sobe i nameštaj", grade: "2" },
+  { id: "seasons_weather", emoji: "☀️", name: "Seasons and weather", desc: "Godišnja doba i vreme", grade: "2" },
   // Grade 3
   { id: "sports", emoji: "⚽", name: "Sports", desc: "Sportovi — Mickey & Heroes", grade: "3" },
   { id: "clothes", emoji: "👕", name: "Clothes", desc: "Minnie's dress, Donald's hat…", grade: "3" },
   { id: "adjectives", emoji: "📏", name: "Adjectives", desc: "Pridevi — Stars & Heroes", grade: "3" },
   { id: "prepositions", emoji: "📦", name: "Prepositions", desc: "Gde je Mickey? in/on/under…", grade: "3" },
   { id: "present_simple_3rd", emoji: "🔄", name: "Present Simple", desc: "Mickey plays, Minnie reads…", grade: "3" },
+  { id: "places_in_town", emoji: "🏙️", name: "Places in town", desc: "Mesta u gradu — Stars & Heroes", grade: "3" },
+  { id: "sea_world", emoji: "🌊", name: "Sea world", desc: "Podvodni svet — Nemo i prijatelji", grade: "3" },
+  { id: "at_school", emoji: "🎒", name: "At school", desc: "U školi — ljudi, mesta i predmeti", grade: "3" },
   // Grade 4
   { id: "comparatives", emoji: "📊", name: "Comparatives", desc: "Poređenje prideva", grade: "4" },
   { id: "have_has", emoji: "🤲", name: "have / has", desc: "Glagol have i has", grade: "4" },
   { id: "plurals", emoji: "📚", name: "Plurals", desc: "Množina imenica", grade: "4" },
   { id: "do_does", emoji: "❓", name: "Do / Does?", desc: "Pitanja u sadašnjem vremenu", grade: "4" },
+  { id: "present_continuous", emoji: "🏃", name: "Present Continuous", desc: "Mickey is running — is/am/are + -ing", grade: "4" },
   // Grade 5
   { id: "past_simple_regular", emoji: "⏮️", name: "Past Simple", desc: "Pravilni glagoli (-ed)", grade: "5" },
   { id: "past_simple_irregular", emoji: "⚡", name: "Irregular Verbs", desc: "Nepravilni glagoli", grade: "5" },
   { id: "past_simple_negative", emoji: "❌", name: "Past Simple — didn't", desc: "Negacija u prošlom vremenu", grade: "5" },
+  { id: "will_going_to", emoji: "🔮", name: "Will and Be going to", desc: "Buduće vreme — will / be going to", grade: "5" },
   // Grade 6
   { id: "past_simple_questions", emoji: "🔍", name: "Past Simple — Did?", desc: "Pitanja u prošlom vremenu", grade: "6" },
   { id: "past_simple_mixed", emoji: "🔀", name: "Past Simple — Mix", desc: "Mešoviti zadaci", grade: "6" },
+  { id: "past_continuous", emoji: "⏳", name: "Past Continuous", desc: "She was reading — was/were + -ing", grade: "6" },
+  { id: "present_perfect", emoji: "✅", name: "Present Perfect", desc: "I have seen — have/has + particip", grade: "6" },
 ];
 
 // ─── TASK GENERATORS ─────────────────────────────────────────────────────────
@@ -193,6 +203,66 @@ export const TOPIC_DATA = {
         type: "listen-circle",
         instruction: "Nastavnik kaže predmet iz učionice na engleskom. Zaokruži odgovarajuću sličicu! 🏫",
         teacherNote: "Izgovorite predmet 2–3 puta. Deca zaokružuju sličicu i mogu pokazati predmet u učionici.",
+        items,
+      };
+    },
+  },
+
+  toys: {
+    generate(count) {
+      const all = [
+        { word: "ball", emoji: "⚽", sr: "lopta" }, { word: "doll", emoji: "🪆", sr: "lutka" },
+        { word: "teddy bear", emoji: "🧸", sr: "medvedić" }, { word: "car", emoji: "🚗", sr: "autić" },
+        { word: "kite", emoji: "🪁", sr: "zmaj" }, { word: "robot", emoji: "🤖", sr: "robot" },
+        { word: "puzzle", emoji: "🧩", sr: "slagalica" }, { word: "blocks", emoji: "🧱", sr: "kockice" },
+        { word: "train", emoji: "🚂", sr: "voz" }, { word: "balloon", emoji: "🎈", sr: "balon" },
+        { word: "drum", emoji: "🥁", sr: "bubanj" }, { word: "yo-yo", emoji: "🪀", sr: "jo-jo" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 12));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže igračku na engleskom. Zaokruži odgovarajuću sličicu! 🧸",
+        teacherNote: "Izgovorite naziv igračke 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  my_home: {
+    generate(count) {
+      const all = [
+        { word: "kitchen", emoji: "🍳", sr: "kuhinja" }, { word: "bedroom", emoji: "🛏️", sr: "spavaća soba" },
+        { word: "bathroom", emoji: "🛁", sr: "kupatilo" }, { word: "living room", emoji: "🛋️", sr: "dnevna soba" },
+        { word: "garden", emoji: "🌳", sr: "bašta" }, { word: "table", emoji: "🪑", sr: "sto" },
+        { word: "chair", emoji: "🪑", sr: "stolica" }, { word: "bed", emoji: "🛏️", sr: "krevet" },
+        { word: "sofa", emoji: "🛋️", sr: "sofa" }, { word: "window", emoji: "🪟", sr: "prozor" },
+        { word: "door", emoji: "🚪", sr: "vrata" }, { word: "lamp", emoji: "💡", sr: "lampa" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 12));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže deo kuće ili nameštaj na engleskom. Zaokruži odgovarajuću sličicu! 🏠",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  seasons_weather: {
+    generate(count) {
+      const all = [
+        { word: "spring", emoji: "🌸", sr: "proleće" }, { word: "summer", emoji: "☀️", sr: "leto" },
+        { word: "autumn", emoji: "🍂", sr: "jesen" }, { word: "winter", emoji: "❄️", sr: "zima" },
+        { word: "sunny", emoji: "🌞", sr: "sunčano" }, { word: "rainy", emoji: "🌧️", sr: "kišovito" },
+        { word: "snowy", emoji: "🌨️", sr: "snežno" }, { word: "windy", emoji: "💨", sr: "vetrovito" },
+        { word: "cloudy", emoji: "☁️", sr: "oblačno" }, { word: "hot", emoji: "🥵", sr: "vruće" },
+        { word: "cold", emoji: "🥶", sr: "hladno" }, { word: "warm", emoji: "🌤️", sr: "toplo" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 12));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže godišnje doba ili vreme na engleskom. Zaokruži odgovarajuću sličicu! ☀️",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu.",
         items,
       };
     },
@@ -395,6 +465,66 @@ export const TOPIC_DATA = {
     },
   },
 
+  places_in_town: {
+    generate(count) {
+      const all = [
+        { word: "school", emoji: "🏫", sr: "škola" }, { word: "park", emoji: "🌳", sr: "park" },
+        { word: "shop", emoji: "🏪", sr: "prodavnica" }, { word: "hospital", emoji: "🏥", sr: "bolnica" },
+        { word: "bank", emoji: "🏦", sr: "banka" }, { word: "cinema", emoji: "🎬", sr: "bioskop" },
+        { word: "restaurant", emoji: "🍽️", sr: "restoran" }, { word: "library", emoji: "📚", sr: "biblioteka" },
+        { word: "station", emoji: "🚉", sr: "stanica" }, { word: "market", emoji: "🛒", sr: "pijaca" },
+        { word: "zoo", emoji: "🦁", sr: "zoo vrt" }, { word: "museum", emoji: "🏛️", sr: "muzej" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 12));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže mesto u gradu na engleskom. Zaokruži odgovarajuću sličicu! 🏙️",
+        teacherNote: "Izgovorite naziv mesta 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  sea_world: {
+    generate(count) {
+      const all = [
+        { word: "fish", emoji: "🐟", sr: "riba" }, { word: "shark", emoji: "🦈", sr: "ajkula" },
+        { word: "whale", emoji: "🐳", sr: "kit" }, { word: "dolphin", emoji: "🐬", sr: "delfin" },
+        { word: "octopus", emoji: "🐙", sr: "hobotnica" }, { word: "crab", emoji: "🦀", sr: "rak" },
+        { word: "starfish", emoji: "⭐", sr: "morska zvezda" }, { word: "jellyfish", emoji: "🪼", sr: "meduza" },
+        { word: "turtle", emoji: "🐢", sr: "kornjača" }, { word: "seahorse", emoji: "🐴", sr: "morski konjic" },
+        { word: "shell", emoji: "🐚", sr: "školjka" }, { word: "coral", emoji: "🪸", sr: "koral" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 12));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže morsko biće na engleskom. Zaokruži odgovarajuću sličicu! 🌊 Nemo je fish, Bruce je shark!",
+        teacherNote: "Izgovorite naziv morskog bića 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  at_school: {
+    generate(count) {
+      const all = [
+        { word: "teacher", emoji: "🧑‍🏫", sr: "učitelj/ica" }, { word: "pupil", emoji: "🧒", sr: "učenik" },
+        { word: "playground", emoji: "🛝", sr: "igralište" }, { word: "break", emoji: "⏰", sr: "odmor" },
+        { word: "lesson", emoji: "📖", sr: "čas" }, { word: "homework", emoji: "📝", sr: "domaći" },
+        { word: "subject", emoji: "🗂️", sr: "predmet" }, { word: "gym", emoji: "🤸", sr: "fiskultura" },
+        { word: "canteen", emoji: "🍽️", sr: "trpezarija" }, { word: "principal", emoji: "🧑‍💼", sr: "direktor" },
+        { word: "timetable", emoji: "🗓️", sr: "raspored časova" }, { word: "blackboard", emoji: "🖤", sr: "tabla" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 12));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže reč vezanu za školu na engleskom. Zaokruži odgovarajuću sličicu! 🎒",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
   // ── Grade 4 ──────────────────────────────────────────────────────────────
 
   comparatives: {
@@ -502,6 +632,31 @@ export const TOPIC_DATA = {
     },
   },
 
+  present_continuous: {
+    generate(count) {
+      const pool = shuffle([
+        { sentence: "Mickey ___ (run) in the park now.", answer: "is running", hint: "(Mickey)" },
+        { sentence: "I ___ (read) a book right now.", answer: "am reading", hint: "(I)" },
+        { sentence: "Minnie and Daisy ___ (dance) at the party.", answer: "are dancing", hint: "(Minnie and Daisy)" },
+        { sentence: "You ___ (write) a letter.", answer: "are writing", hint: "(You)" },
+        { sentence: "Donald ___ (swim) in the sea.", answer: "is swimming", hint: "(Donald)" },
+        { sentence: "We ___ (play) a game together.", answer: "are playing", hint: "(We)" },
+        { sentence: "Goofy ___ (cook) dinner right now.", answer: "is cooking", hint: "(Goofy)" },
+        { sentence: "The children ___ (sing) a song.", answer: "are singing", hint: "(The children)" },
+        { sentence: "Pluto ___ (sleep) under the table.", answer: "is sleeping", hint: "(Pluto)" },
+        { sentence: "I ___ (do) my homework at the moment.", answer: "am doing", hint: "(I)" },
+        { sentence: "Mickey and Donald ___ (build) a boat.", answer: "are building", hint: "(Mickey and Donald)" },
+        { sentence: "She ___ (watch) a cartoon now.", answer: "is watching", hint: "(She)" },
+      ]).slice(0, Math.min(count, 12));
+      return {
+        type: "fillin",
+        instruction: "Stavi glagol u Present Continuous (am/is/are + -ing). ⭐ Šta Mickey i prijatelji rade upravo sada?",
+        wordBank: ["am", "is", "are"],
+        items: pool,
+      };
+    },
+  },
+
   // ── Grade 5 ──────────────────────────────────────────────────────────────
 
   past_simple_regular: {
@@ -582,6 +737,31 @@ export const TOPIC_DATA = {
     },
   },
 
+  will_going_to: {
+    generate(count) {
+      const pool = shuffle([
+        { sentence: "I think it ___ rain tomorrow.", answer: "will", hint: "(predviđanje)" },
+        { sentence: "Look at those clouds! It ___ rain.", answer: "is going to", hint: "(vidljiv znak)" },
+        { sentence: "Mickey ___ visit his grandma next week.", answer: "is going to", hint: "(plan)" },
+        { sentence: "I promise I ___ help you.", answer: "will", hint: "(obećanje)" },
+        { sentence: "We ___ go to the beach this summer.", answer: "are going to", hint: "(plan)" },
+        { sentence: "Maybe she ___ come to the party.", answer: "will", hint: "(pretpostavka)" },
+        { sentence: "Look out! You ___ fall!", answer: "are going to", hint: "(vidljiv znak)" },
+        { sentence: "I ___ answer the phone.", answer: "will", hint: "(spontana odluka)" },
+        { sentence: "They ___ build a new school next year.", answer: "are going to", hint: "(plan)" },
+        { sentence: "I'm sure Donald ___ win the race.", answer: "will", hint: "(pretpostavka)" },
+        { sentence: "He ___ study medicine after school.", answer: "is going to", hint: "(plan)" },
+        { sentence: "Don't worry, I ___ carry your bag.", answer: "will", hint: "(spontana ponuda)" },
+      ]).slice(0, Math.min(count, 12));
+      return {
+        type: "fillin",
+        instruction: 'Popuni rečenicu sa "will" ili odgovarajućim oblikom "be going to".',
+        wordBank: ["will", "am going to", "is going to", "are going to"],
+        items: pool,
+      };
+    },
+  },
+
   // ── Grade 6 ──────────────────────────────────────────────────────────────
 
   past_simple_questions: {
@@ -628,6 +808,56 @@ export const TOPIC_DATA = {
         instruction: "Stavi glagol u odgovarajući oblik Past Simple (potvrdno, negativno ili pitanje).",
         wordBank: [],
         items: sentences,
+      };
+    },
+  },
+
+  past_continuous: {
+    generate(count) {
+      const pool = shuffle([
+        { sentence: "She ___ (read) a book when I called.", answer: "was reading", hint: "(She)" },
+        { sentence: "They ___ (play) football at 5 o'clock.", answer: "were playing", hint: "(They)" },
+        { sentence: "I ___ (sleep) when the phone rang.", answer: "was sleeping", hint: "(I)" },
+        { sentence: "We ___ (watch) TV all evening.", answer: "were watching", hint: "(We)" },
+        { sentence: "Mickey ___ (drive) to the clubhouse.", answer: "was driving", hint: "(Mickey)" },
+        { sentence: "The children ___ (sing) when the teacher walked in.", answer: "were singing", hint: "(The children)" },
+        { sentence: "He ___ (cook) dinner at 7 o'clock yesterday.", answer: "was cooking", hint: "(He)" },
+        { sentence: "You ___ (not/listen) to me.", answer: "weren't listening", hint: "(You)" },
+        { sentence: "Minnie and Daisy ___ (walk) in the park.", answer: "were walking", hint: "(Minnie and Daisy)" },
+        { sentence: "___ it (rain) when you left home?", answer: "Was it raining", hint: "(pitanje)" },
+        { sentence: "I ___ (do) my homework when the lights went out.", answer: "was doing", hint: "(I)" },
+        { sentence: "She ___ (not/study) at 9 pm.", answer: "wasn't studying", hint: "(She)" },
+      ]).slice(0, Math.min(count, 12));
+      return {
+        type: "fillin",
+        instruction: "Stavi glagol u Past Continuous (was/were + -ing). Šta su Mickey i prijatelji radili u tom trenutku?",
+        wordBank: ["was", "were"],
+        items: pool,
+      };
+    },
+  },
+
+  present_perfect: {
+    generate(count) {
+      const pool = shuffle([
+        { sentence: "I have ___ (see) that movie already.", answer: "seen", hint: "(I)" },
+        { sentence: "She has ___ (finish) her homework.", answer: "finished", hint: "(She)" },
+        { sentence: "They have ___ (visit) London twice.", answer: "visited", hint: "(They)" },
+        { sentence: "Mickey has ___ (eat) all the cookies.", answer: "eaten", hint: "(Mickey)" },
+        { sentence: "We have ___ (never/be) to Paris.", answer: "never been", hint: "(We)" },
+        { sentence: "Have you ___ (read) this book?", answer: "read", hint: "(pitanje)" },
+        { sentence: "He has ___ (lose) his keys.", answer: "lost", hint: "(He)" },
+        { sentence: "Minnie has just ___ (make) a cake.", answer: "made", hint: "(Minnie)" },
+        { sentence: "I have ___ (not/do) my homework yet.", answer: "not done", hint: "(I)" },
+        { sentence: "They have already ___ (leave).", answer: "left", hint: "(They)" },
+        { sentence: "Has she ever ___ (be) to the zoo?", answer: "been", hint: "(pitanje)" },
+        { sentence: "We have ___ (write) three letters this week.", answer: "written", hint: "(We)" },
+      ]).slice(0, Math.min(count, 12));
+      return {
+        type: "fillin",
+        instruction: "Stavi glagol u Present Perfect (have/has + particip). Šta su Mickey i prijatelji već uradili?",
+        wordBank: ["have", "has"],
+        items: pool,
       };
     },
   },
