@@ -95,7 +95,7 @@ export default function EnglishGenerator() {
   const [showLanding, setShowLanding] = useState(true);
   const [view, setView] = useState("generator");
   const [selectedTopic, setSelectedTopic] = useState(null);
-  const [grade, setGrade] = useState("all");
+  const [grade, setGrade] = useState("");
   const [count, setCount] = useState(10);
   const [tasks, setTasks] = useState(null);
   const [showAnswers, setShowAnswers] = useState(false);
@@ -291,9 +291,11 @@ export default function EnglishGenerator() {
     setClasses(prev => prev.map(c => c.id === classId ? { ...c, students: newStudents } : c));
   };
 
-  const filteredTopics = grade === "all"
-    ? TOPICS
-    : TOPICS.filter(t => t.grade === grade);
+  const gradeGroups = Array.from(new Set(TOPICS.map(t => t.grade)))
+    .sort((a, b) => Number(a) - Number(b))
+    .map(g => ({ grade: g, count: TOPICS.filter(t => t.grade === g).length }));
+
+  const filteredTopics = grade ? TOPICS.filter(t => t.grade === grade) : [];
 
   const currentTopicData = selectedTopic ? TOPIC_DATA[selectedTopic] : null;
   const supportedTypes = currentTopicData?.supportedTypes;
@@ -654,15 +656,18 @@ export default function EnglishGenerator() {
               <div className="config-row">
                 <div className="field">
                   <label>Grade</label>
-                  <select value={grade} onChange={e => { setGrade(e.target.value); setSelectedTopic(null); }}>
-                    <option value="all">All grades</option>
-                    <option value="1">Grade 1</option>
-                    <option value="2">Grade 2</option>
-                    <option value="3">Grade 3</option>
-                    <option value="4">Grade 4</option>
-                    <option value="5">Grade 5</option>
-                    <option value="6">Grade 6</option>
-                  </select>
+                  <div className="type-pills">
+                    {gradeGroups.map(g => (
+                      <button
+                        key={g.grade}
+                        type="button"
+                        className={`type-pill ${grade === g.grade ? "active" : ""}`}
+                        onClick={() => { setGrade(g.grade); setSelectedTopic(null); }}
+                      >
+                        Grade {g.grade} ({g.count})
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="field">
                   <label>Number of exercises</label>
@@ -679,19 +684,26 @@ export default function EnglishGenerator() {
 
               <div className="field full" style={{ marginBottom: 16 }}>
                 <label>Topic</label>
-                <div className="topic-grid">
-                  {filteredTopics.map(t => (
-                    <div
-                      key={t.id}
-                      className={`topic-card ${selectedTopic === t.id ? "active" : ""}`}
-                      onClick={() => selectTopic(t.id)}
-                    >
-                      <div className="topic-emoji">{t.emoji}</div>
-                      <div className="topic-name">{t.name}</div>
-                      <div className="topic-desc">{t.desc} · Grade {t.grade}</div>
-                    </div>
-                  ))}
-                </div>
+                {grade ? (
+                  <div className="topic-grid">
+                    {filteredTopics.map(t => (
+                      <div
+                        key={t.id}
+                        className={`topic-card ${selectedTopic === t.id ? "active" : ""}`}
+                        onClick={() => selectTopic(t.id)}
+                      >
+                        <div className="topic-emoji">{t.emoji}</div>
+                        <div className="topic-name">{t.name}</div>
+                        <div className="topic-desc">{t.desc} · Grade {t.grade}</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <div className="empty-state-emoji">👆</div>
+                    <div className="empty-state-text">Choose a grade above to see its topics.</div>
+                  </div>
+                )}
               </div>
 
               {supportedTypes && supportedTypes.length > 1 && (
