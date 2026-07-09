@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from './supabaseClient.js';
 import Logo from './Logo.jsx';
 import PdfPreviewModal from './PdfPreviewModal.jsx';
-import { ListenCircleTask, ColorBoxTask, MatchTask, FillInTask, TrueFalseTask } from './WorksheetTasks.jsx';
 import { styles } from './styles.js';
 import { TOPICS, TOPIC_DATA, generateTasks } from './worksheetContent.js';
 import { fetchProfile } from './profileHelpers.js';
@@ -770,45 +769,6 @@ export default function EnglishGenerator() {
                 ✏️ Generate worksheet
               </button>
             </div>
-
-            {tasks && topic && (
-              <div className="worksheet-wrap">
-                <div className="worksheet-toolbar">
-                  <div className="worksheet-meta">
-                    <strong>{topic.emoji} {topic.name}</strong> · Grade {topic.grade} · {tasks.items?.length || tasks.pairs?.length} exercises
-                  </div>
-                  <div className="toolbar-actions">
-                    <button className="action-btn" onClick={() => setShowAnswers(!showAnswers)}>
-                      {showAnswers ? "Hide answers" : "Show answers"}
-                    </button>
-                    <button className="action-btn" onClick={generate}>New set</button>
-                    <button className="action-btn primary" onClick={() => setPdfModal(true)}>🖨 Preview PDF</button>
-                  </div>
-                </div>
-
-                <div className="worksheet">
-                  <div className="ws-header">
-                    <div>
-                      <div className="ws-badge">Grade {topic.grade} · English</div>
-                      <div className="ws-title">{topic.emoji} {topic.name}</div>
-                      <div className="ws-subtitle">{topic.desc}</div>
-                    </div>
-                    <div className="ws-fields">
-                      <div className="ws-field-line">Name: <span>{studentName}</span></div>
-                      {selectedClass && <div className="ws-field-line">Class: <span>{selectedClass.name}</span></div>}
-                      <div className="ws-field-line">Date: <span /></div>
-                      <div className="ws-field-line">Grade: <span /></div>
-                    </div>
-                  </div>
-
-                  {tasks.type === "listen-circle" && <ListenCircleTask data={tasks} />}
-                  {tasks.type === "color-boxes" && <ColorBoxTask data={tasks} />}
-                  {tasks.type === "match" && <MatchTask data={tasks} showAnswers={showAnswers} />}
-                  {tasks.type === "fillin" && <FillInTask data={tasks} showAnswers={showAnswers} />}
-                  {tasks.type === "tf" && <TrueFalseTask data={tasks} showAnswers={showAnswers} />}
-                </div>
-              </div>
-            )}
           </>
         )}
 
