@@ -539,9 +539,8 @@ export const styles = `
 
   .fill-item {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 8px;
-    flex-wrap: wrap;
   }
 
   .fill-num {
@@ -550,6 +549,7 @@ export const styles = `
     color: #c4a498;
     width: 20px;
     flex-shrink: 0;
+    padding-top: 2px;
   }
 
   .fill-sentence {

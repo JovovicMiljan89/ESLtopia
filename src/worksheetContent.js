@@ -30,6 +30,9 @@ export const TOPICS = [
   { id: "have_has", emoji: "🤲", name: "have / has", desc: "Glagol have i has", grade: "4" },
   { id: "plurals", emoji: "📚", name: "Plurals", desc: "Množina imenica", grade: "4" },
   { id: "do_does", emoji: "❓", name: "Do / Does?", desc: "Pitanja u sadašnjem vremenu", grade: "4" },
+  { id: "present_simple_negative", emoji: "🚫", name: "Present Simple — Negative", desc: "Negacija — don't / doesn't", grade: "4" },
+  { id: "present_simple_questions", emoji: "❔", name: "Present Simple — Questions", desc: "Napiši pitanje u sadašnjem vremenu", grade: "4" },
+  { id: "present_simple_short_answers", emoji: "💬", name: "Present Simple — Short Answers", desc: "Yes, he does. / No, she doesn't.", grade: "4" },
   { id: "present_continuous", emoji: "🏃", name: "Present Continuous", desc: "Mickey is running — is/am/are + -ing", grade: "4" },
   // Grade 5
   { id: "past_simple_regular", emoji: "⏮️", name: "Past Simple", desc: "Pravilni glagoli (-ed)", grade: "5" },
@@ -91,18 +94,62 @@ function isYoungGrade(topicId) {
 function toSentenceTF(items) {
   const targetCorrect = Math.round(items.length / 2);
   const correctIdx = new Set(shuffle([...Array(items.length).keys()]).slice(0, targetCorrect));
+  // Some source sentences (present_simple_questions, present_simple_short_answers)
+  // already end in "→ ___" as their own fill-in blank marker — strip that
+  // before appending "→ candidate", so it doesn't end up with a double arrow.
+  const base = (s) => s.replace(/\s*→\s*_{2,}\s*$/, "");
   return {
     type: "tf",
     instruction: 'Zaokruži TRUE ako je ponuđeni odgovor tačan za datu rečenicu, FALSE ako nije.',
     items: items.map((item, i) => {
+      const stem = base(item.sentence);
       if (correctIdx.has(i)) {
-        return { sentence: `${item.sentence} → "${item.answer}"`, answer: true };
+        return { sentence: `${stem} → "${item.answer}"`, answer: true };
       }
       const others = items.filter((_, j) => j !== i).map(o => o.answer);
       const wrong = others.length > 0 ? shuffle(others)[0] : item.answer;
-      return { sentence: `${item.sentence} → "${wrong}"`, answer: wrong === item.answer };
+      return { sentence: `${stem} → "${wrong}"`, answer: wrong === item.answer };
     }),
   };
+}
+
+// Negative form / questions / short answers all depend on the subject's
+// person and number (he/she/it → does/doesn't, I/we/you/they → do/don't),
+// which the app's other Present Simple content doesn't track as data — it's
+// baked into hand-written sentences. Deriving these three exercise types
+// from that loose text was the actual risk flagged before building this (a
+// swapped-in wrong answer next to an unrelated "(verb)" hint reads as
+// nonsense — see toSentenceTF above for where that already bit once).
+// Rather than parse existing sentences, this is a small dedicated dataset
+// with every field the grammar rules need spelled out explicitly, so
+// nothing has to be inferred at generation time. "I" and "You" are left out
+// on purpose: short answers to a question about "you" naturally flip to
+// "I" ("Do you like pizza?" → "Yes, I do."), which is a real perspective
+// shift these worksheets — non-interactive, no back-and-forth — have no
+// clean way to model, so subjects are limited to ones where the answer's
+// pronoun matches the question's subject with no flip needed.
+const PRESENT_SIMPLE_SUBJECTS = [
+  { subject: "Mickey", subjectInQuestion: "Mickey", pronoun: "he", thirdSg: true, base: "play", rest: "football on Sundays" },
+  { subject: "Minnie", subjectInQuestion: "Minnie", pronoun: "she", thirdSg: true, base: "read", rest: "books every evening" },
+  { subject: "Donald", subjectInQuestion: "Donald", pronoun: "he", thirdSg: true, base: "swim", rest: "in the lake" },
+  { subject: "Daisy", subjectInQuestion: "Daisy", pronoun: "she", thirdSg: true, base: "cook", rest: "dinner for her family" },
+  { subject: "Goofy", subjectInQuestion: "Goofy", pronoun: "he", thirdSg: true, base: "watch", rest: "cartoons after school" },
+  { subject: "Pluto", subjectInQuestion: "Pluto", pronoun: "he", thirdSg: true, base: "run", rest: "in the park" },
+  { subject: "My sister", subjectInQuestion: "my sister", pronoun: "she", thirdSg: true, base: "have", rest: "a big cat" },
+  { subject: "We", subjectInQuestion: "we", pronoun: "we", thirdSg: false, base: "live", rest: "near the park" },
+  { subject: "They", subjectInQuestion: "they", pronoun: "they", thirdSg: false, base: "study", rest: "English on Mondays" },
+  { subject: "Mickey and Minnie", subjectInQuestion: "Mickey and Minnie", pronoun: "they", thirdSg: false, base: "clean", rest: "the clubhouse together" },
+  { subject: "The children", subjectInQuestion: "the children", pronoun: "they", thirdSg: false, base: "play", rest: "in the garden" },
+  { subject: "My parents", subjectInQuestion: "my parents", pronoun: "they", thirdSg: false, base: "work", rest: "in the city" },
+];
+
+function conjugate3rdPerson(base) {
+  if (base === "have") return "has";
+  if (base === "go") return "goes";
+  if (base === "do") return "does";
+  if (/[sxz]$|[cs]h$/.test(base)) return base + "es";
+  if (/[^aeiou]y$/.test(base)) return base.slice(0, -1) + "ies";
+  return base + "s";
 }
 
 // Topics with a plain word/emoji/sr picture pool that's meaningfully
@@ -797,6 +844,56 @@ export const TOPIC_DATA = {
         instruction: 'Napiši "Do" ili "Does" na početku pitanja u sadašnjem vremenu.',
         wordBank: ["Do", "Does"],
         items: pool,
+      };
+    },
+  },
+
+  present_simple_negative: {
+    generate(count) {
+      const pool = shuffle(PRESENT_SIMPLE_SUBJECTS).slice(0, Math.min(count, PRESENT_SIMPLE_SUBJECTS.length));
+      return {
+        type: "fillin",
+        instruction: "Stavi rečenicu u negaciju koristeći don't ili doesn't.",
+        wordBank: ["don't", "doesn't"],
+        items: pool.map(p => ({
+          sentence: `${p.subject} ___ (not/${p.base}) ${p.rest}.`,
+          answer: `${p.thirdSg ? "doesn't" : "don't"} ${p.base}`,
+        })),
+      };
+    },
+  },
+
+  present_simple_questions: {
+    generate(count) {
+      const pool = shuffle(PRESENT_SIMPLE_SUBJECTS).slice(0, Math.min(count, PRESENT_SIMPLE_SUBJECTS.length));
+      return {
+        type: "fillin",
+        instruction: "Napiši pitanje na osnovu rečenice.",
+        wordBank: ["Do", "Does"],
+        items: pool.map(p => ({
+          sentence: `${p.subject} ${p.thirdSg ? conjugate3rdPerson(p.base) : p.base} ${p.rest}. → ___`,
+          answer: `${p.thirdSg ? "Does" : "Do"} ${p.subjectInQuestion} ${p.base} ${p.rest}?`,
+        })),
+      };
+    },
+  },
+
+  present_simple_short_answers: {
+    generate(count) {
+      const pool = shuffle(PRESENT_SIMPLE_SUBJECTS).slice(0, Math.min(count, PRESENT_SIMPLE_SUBJECTS.length));
+      return {
+        type: "fillin",
+        instruction: "Odgovori kratkim odgovorom (Yes/No).",
+        wordBank: [],
+        items: pool.map((p, i) => {
+          const isYes = i % 2 === 0;
+          const aux = p.thirdSg ? "does" : "do";
+          const negAux = p.thirdSg ? "doesn't" : "don't";
+          return {
+            sentence: `${p.thirdSg ? "Does" : "Do"} ${p.subjectInQuestion} ${p.base} ${p.rest}? (${isYes ? "✓" : "✗"}) → ___`,
+            answer: isYes ? `Yes, ${p.pronoun} ${aux}.` : `No, ${p.pronoun} ${negAux}.`,
+          };
+        }),
       };
     },
   },
