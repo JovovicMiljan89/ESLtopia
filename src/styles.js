@@ -755,6 +755,37 @@ export const styles = `
     body.pdf-modal-open .tf-box.correct-f { background: #fff; border-color: #ccc; color: transparent; }
     body.pdf-modal-open .fill-blank-answer { color: transparent; border-bottom-color: #2d1b0e; }
     body.pdf-modal-open .match-answer { color: transparent; }
+
+    /* Flashcard modal open — print only the flashcard grid */
+    body.flashcard-modal-open .app { display: none !important; }
+    body.flashcard-modal-open .pdf-modal-overlay {
+      position: static !important;
+      background: #fff !important;
+      backdrop-filter: none !important;
+    }
+    body.flashcard-modal-open .pdf-modal-card {
+      max-width: 100% !important;
+      max-height: none !important;
+      height: auto !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      background: #fff !important;
+    }
+    body.flashcard-modal-open .pdf-modal-header { display: none !important; }
+    body.flashcard-modal-open .pdf-modal-actionbar { display: none !important; }
+    body.flashcard-modal-open .pdf-modal-scroll {
+      padding: 0 !important;
+      overflow: visible !important;
+      background: #fff !important;
+      display: block !important;
+    }
+    body.flashcard-modal-open .flashcard-page {
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      width: 100% !important;
+      padding: 0 !important;
+    }
+    .flashcard { break-inside: avoid; }
   }
 
   .tabs {
@@ -2315,6 +2346,86 @@ export const styles = `
     .pdf-modal-header { padding: 12px 14px; }
     .pdf-modal-actionbar { padding: 10px 14px; }
     .pdf-outline-btn, .pdf-primary-btn { font-size: 12px; padding: 8px 12px; }
+  }
+
+  /* ═══ FLASHCARDS ══════════════════════════════════════════════════════════ */
+
+  .flashcard-page {
+    background: #fff;
+    width: 794px;
+    max-width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 16px 44px -16px rgba(45,27,14,0.32);
+    padding: 32px;
+    flex-shrink: 0;
+    align-self: flex-start;
+  }
+
+  .flashcard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .flashcard {
+    border-radius: 16px;
+    padding: 20px 12px;
+    min-height: 170px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .flashcard-emoji { font-size: 44px; margin-bottom: 8px; line-height: 1; }
+
+  .flashcard-word {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 17px;
+    color: #2d1b0e;
+    text-transform: capitalize;
+    line-height: 1.25;
+  }
+
+  .flashcard-translation {
+    font-size: 12px;
+    color: #9b7060;
+    font-style: italic;
+    margin-top: 4px;
+  }
+
+  /* Color set — playful pastel palette, cycling every 6 cards */
+  .flashcard-color { border: 2px solid #ffd7c2; background: linear-gradient(135deg, #fff4f0 0%, #ffe8f5 100%); }
+  .flashcard-color:nth-of-type(6n+2) { border-color: #bfe6cf; background: linear-gradient(135deg, #f2fbf5 0%, #e3f6ea 100%); }
+  .flashcard-color:nth-of-type(6n+3) { border-color: #b9d9f7; background: linear-gradient(135deg, #f1f8ff 0%, #e3f0fd 100%); }
+  .flashcard-color:nth-of-type(6n+4) { border-color: #ffe08a; background: linear-gradient(135deg, #fffaeb 0%, #fff2c9 100%); }
+  .flashcard-color:nth-of-type(6n+5) { border-color: #d8c4f2; background: linear-gradient(135deg, #f8f3fd 0%, #ede0fa 100%); }
+  .flashcard-color:nth-of-type(6n+0) { border-color: #f7b8c8; background: linear-gradient(135deg, #fff0f4 0%, #fde1e9 100%); }
+
+  /* Color-in set — thick dashed outline, silhouette emoji, bubble-outline word for kids to color themselves */
+  .flashcard-outline {
+    background: #fff;
+    border: 3px dashed #2d1b0e;
+  }
+  .flashcard-outline .flashcard-emoji {
+    filter: grayscale(1) brightness(0);
+    opacity: 0.82;
+  }
+  .flashcard-outline .flashcard-word { color: #2d1b0e; }
+  .flashcard-outline .flashcard-translation { color: #b0a89f; }
+
+  @media (max-width: 860px) {
+    .flashcard-page { width: 100%; padding: 20px 14px; }
+    .flashcard-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 480px) {
+    .flashcard-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .flashcard { min-height: 140px; padding: 14px 8px; }
+    .flashcard-emoji { font-size: 34px; }
+    .flashcard-word { font-size: 14px; }
   }
 
 `;

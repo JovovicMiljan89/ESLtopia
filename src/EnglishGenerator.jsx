@@ -2,8 +2,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from './supabaseClient.js';
 import Logo from './Logo.jsx';
 import PdfPreviewModal from './PdfPreviewModal.jsx';
+import FlashcardModal from './FlashcardModal.jsx';
 import { styles } from './styles.js';
-import { TOPICS, TOPIC_DATA, generateTasks } from './worksheetContent.js';
+import { TOPICS, TOPIC_DATA, generateTasks, generateFlashcards } from './worksheetContent.js';
 import { fetchProfile } from './profileHelpers.js';
 import LandingPage from './LandingPage.jsx';
 import AdminPanel from './AdminPanel.jsx';
@@ -101,6 +102,9 @@ export default function EnglishGenerator() {
   const [taskType, setTaskType] = useState("match");
   const [pdfModal, setPdfModal] = useState(false);
   const [generateKey, setGenerateKey] = useState(0);
+  const [flashcards, setFlashcards] = useState(null);
+  const [flashcardModal, setFlashcardModal] = useState(false);
+  const [flashcardKey, setFlashcardKey] = useState(0);
 
   const [classes, setClasses] = useState([]);
   const [loaded, setLoaded] = useState(false);
@@ -313,6 +317,13 @@ export default function EnglishGenerator() {
     setShowAnswers(false);
     setPdfModal(true);
     setGenerateKey(k => k + 1);
+  };
+
+  const generateFlashcardSet = () => {
+    if (!selectedTopic) return;
+    setFlashcards(generateFlashcards(selectedTopic, count));
+    setFlashcardModal(true);
+    setFlashcardKey(k => k + 1);
   };
 
   const topic = TOPICS.find(t => t.id === selectedTopic);
@@ -760,14 +771,24 @@ export default function EnglishGenerator() {
                 </p>
               )}
 
-              <button
-                className="gen-btn"
-                onClick={generate}
-                disabled={!selectedTopic}
-                style={{ marginTop: 20 }}
-              >
-                ✏️ Generate worksheet
-              </button>
+              <div style={{ display: "flex", gap: 10, marginTop: 20, flexWrap: "wrap" }}>
+                <button
+                  className="gen-btn"
+                  onClick={generate}
+                  disabled={!selectedTopic}
+                  style={{ flex: 1, minWidth: 200 }}
+                >
+                  ✏️ Generate worksheet
+                </button>
+                <button
+                  className="gen-btn"
+                  onClick={generateFlashcardSet}
+                  disabled={!selectedTopic}
+                  style={{ flex: 1, minWidth: 200, background: "linear-gradient(135deg, #6741d9 0%, #cc5de8 100%)" }}
+                >
+                  🃏 Generate flashcards
+                </button>
+              </div>
             </div>
           </>
         )}
@@ -925,6 +946,16 @@ export default function EnglishGenerator() {
         onClose={() => setPdfModal(false)}
         onNewSet={generate}
         onToggleAnswers={() => setShowAnswers(v => !v)}
+      />
+
+      <FlashcardModal
+        open={flashcardModal}
+        topic={topic}
+        cards={flashcards}
+        sheetKey={flashcardKey}
+        styles={styles}
+        onClose={() => setFlashcardModal(false)}
+        onNewSet={generateFlashcardSet}
       />
     </>
   );

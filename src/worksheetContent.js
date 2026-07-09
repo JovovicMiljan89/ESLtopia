@@ -70,6 +70,34 @@ export function generateTasks(topicId, count, taskType) {
   return data.generate(count, taskType);
 }
 
+// Every topic generator produces a different item shape (vocab word/emoji/sr,
+// match en/sr pairs, fillin sentence/answer, tf sentence/boolean). Flashcards
+// need one uniform {emoji, front, back} shape so the same modal can render
+// cards for any topic, regardless of what kind of exercise it normally makes.
+function toFlashcard(entry) {
+  if (typeof entry.word === "string") {
+    return { emoji: entry.emoji || "🔤", front: entry.word, back: entry.sr || "" };
+  }
+  if (typeof entry.en === "string") {
+    return { emoji: "🔤", front: entry.en, back: entry.sr || "" };
+  }
+  if (typeof entry.answer === "boolean") {
+    return { emoji: entry.answer ? "✅" : "❌", front: entry.sentence, back: entry.answer ? "TRUE" : "FALSE" };
+  }
+  if (typeof entry.sentence === "string" && typeof entry.answer === "string") {
+    return { emoji: "✏️", front: entry.sentence, back: entry.answer };
+  }
+  return null;
+}
+
+export function generateFlashcards(topicId, count) {
+  const data = TOPIC_DATA[topicId];
+  if (!data) return null;
+  const result = data.generate(count);
+  const source = result.items || result.pairs || [];
+  return source.map(toFlashcard).filter(Boolean);
+}
+
 export const TOPIC_DATA = {
   colors: {
     generate(count) {
