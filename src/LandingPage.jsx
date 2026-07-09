@@ -68,6 +68,10 @@ export default function LandingPage({ onStart }) {
           <strong>⭐ Grades 1–3:</strong> exercises aligned with the <strong>Disney Stars &amp; Heroes</strong> textbook (Klett) — Mickey, Minnie, Donald, Goofy and friends.
         </p>
       </div>
+
+      <p style={{ textAlign: "center", fontSize: 11, color: "#c4a498", marginTop: 24 }}>
+        Icons by <a href="https://openmoji.org" target="_blank" rel="noopener noreferrer" style={{ color: "inherit" }}>OpenMoji</a> — the open-source emoji and icon project. License: CC BY-SA 4.0
+      </p>
     </div>
   );
 }
