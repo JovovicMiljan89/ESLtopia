@@ -14,6 +14,14 @@
 //
 // Fixed firstName/lastName keep the header's name/avatar deterministic even
 // though the email itself is randomized per run (uniqueEmail).
+//
+// The generator's grade-picker UI means topic cards only render once a grade
+// is picked (see EnglishGenerator.jsx), so every flow below selects Grade 2
+// before touching a topic card. That grade-picker + the multi-section
+// worksheet layout are both intentional UI changes the current baselines
+// predate — they need regenerating via the workflow above before this file
+// will pass again, this fix only gets the tests interacting with the right
+// elements.
 
 import { test, expect, type Page } from '@playwright/test';
 import { createConfirmedUser, uniqueEmail } from '../helpers/cleanup';
@@ -47,6 +55,7 @@ test('dashboard (generator tab, no topic selected)', async ({ page }) => {
 
 test('worksheet generator settings (topic selected)', async ({ page }) => {
   await freshDashboard(page);
+  await page.getByRole('button', { name: /^Grade 2/ }).click();
   await page.locator('.topic-card', { hasText: 'am / is / are' }).click();
   await expect(page.locator('.topic-card.active')).toBeVisible();
   await expect(page.locator('.app')).toHaveScreenshot('worksheet-generator.png', SCREENSHOT_OPTS);
@@ -54,6 +63,7 @@ test('worksheet generator settings (topic selected)', async ({ page }) => {
 
 test('PDF preview modal', async ({ page }) => {
   await freshDashboard(page);
+  await page.getByRole('button', { name: /^Grade 2/ }).click();
   await page.locator('.topic-card', { hasText: 'am / is / are' }).click();
   await page.getByRole('button', { name: /generate worksheet/i }).click();
   await expect(page.locator('.pdf-modal-card')).toBeVisible();

@@ -4,12 +4,14 @@
 // worksheet generator. Redesigned in commit dc30d0f (light card-style header +
 // action bar).
 //
-// "am / is / are" is used as the fixture topic because its generator always
-// returns type "fillin" (no supportedTypes branching), so the rendered markup
-// is deterministic across runs. `.pdf-a4-page` scopes assertions to the modal's
-// copy of the worksheet — the same task component also renders in the
-// background `.worksheet-wrap`, which stays mounted (just visually covered)
-// while the modal is open.
+// "am / is / are" is used as the fixture topic (Grade 2) because its generator
+// always returns type "fillin" as the primary section, so that section's
+// markup is deterministic across runs. Topic cards only render once a grade
+// is picked (grade-picker UI, see EnglishGenerator.jsx), so every flow here
+// selects Grade 2 first. Worksheets are multi-section since generateWorksheet()
+// (worksheetContent.js) — am/is/are gets a fillin primary + a true/false
+// secondary — so assertions on `.answer-key` etc. must expect that both
+// sections render their own copy, not exactly one.
 
 import { test, expect } from '@playwright/test';
 import { createConfirmedUser, uniqueEmail } from '../helpers/cleanup';
@@ -24,6 +26,7 @@ test.beforeAll(async () => {
 
 async function openGeneratedWorksheet(page: import('@playwright/test').Page) {
   await loginToApp(page, teacherEmail, PASSWORD);
+  await page.getByRole('button', { name: /^Grade 2/ }).click();
   await page.locator('.topic-card', { hasText: 'am / is / are' }).click();
   await page.getByRole('button', { name: /generate worksheet/i }).click();
   await expect(page.locator('.pdf-modal-card')).toBeVisible();
@@ -41,19 +44,24 @@ test.describe('PDF preview modal', () => {
     await openGeneratedWorksheet(page);
     const toggle = page.locator('.pdf-answer-toggle');
     const answers = page.locator('.pdf-a4-page .fill-blank-answer');
-    const answerKey = page.locator('.pdf-a4-page .answer-key');
+    // Worksheets are multi-section now (fillin primary + tf secondary for
+    // am/is/are), and each section renders its own answer-key block, so this
+    // locator can match more than one element — assert on count, not
+    // toBeVisible(), which requires exactly one match.
+    const answerKeys = page.locator('.pdf-a4-page .answer-key');
 
     await expect(answers).toHaveCount(0);
-    await expect(answerKey).not.toBeVisible();
+    await expect(answerKeys).toHaveCount(0);
 
     await toggle.click();
     await expect(toggle).toHaveClass(/active/);
-    await expect(answerKey).toBeVisible();
+    expect(await answerKeys.count()).toBeGreaterThan(0);
     expect(await answers.count()).toBeGreaterThan(0);
 
     await toggle.click();
     await expect(toggle).not.toHaveClass(/active/);
     await expect(answers).toHaveCount(0);
+    await expect(answerKeys).toHaveCount(0);
   });
 
   test('"New set" regenerates the worksheet without closing the modal', async ({ page }) => {
