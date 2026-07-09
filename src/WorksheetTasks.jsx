@@ -42,7 +42,7 @@ export function ColorBoxTask({ data }) {
           <div className="color-box" key={i}>
             <div className="color-box-square" />
             <div className="color-box-word">{item.word}</div>
-            <div className="color-box-sr">{item.sr}</div>
+            {item.sr && <div className="color-box-sr">{item.sr}</div>}
           </div>
         ))}
       </div>

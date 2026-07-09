@@ -70,6 +70,92 @@ export function generateTasks(topicId, count, taskType) {
   return data.generate(count, taskType);
 }
 
+// Grades 1–2 are pre/early-reading — worksheets and flashcards for those
+// topics must not rely on a printed Serbian translation, since the whole
+// point (listening + picture recognition) breaks down if a child has to
+// read the answer instead.
+function isYoungGrade(topicId) {
+  const meta = TOPICS.find(t => t.id === topicId);
+  return meta ? (meta.grade === "1" || meta.grade === "2") : false;
+}
+
+// Builds a true/false round out of fillin sentences (am_is_are, prepositions,
+// do_does, present/past continuous, present perfect, will/going to, ...) —
+// half get their real answer proposed (TRUE), the rest get a wrong answer
+// swapped in from elsewhere in the same pool (FALSE). Many of these sentences
+// embed a "(verb)" hint right after the blank (e.g. "Mickey ___ (run) in the
+// park now."), so splicing a swapped-in answer directly into the sentence
+// text can read as nonsense next to that hint ("Mickey is eating (run)...").
+// Showing sentence → "candidate answer" as a template, instead of rewriting
+// the sentence, sidesteps that entirely.
+function toSentenceTF(items) {
+  const targetCorrect = Math.round(items.length / 2);
+  const correctIdx = new Set(shuffle([...Array(items.length).keys()]).slice(0, targetCorrect));
+  return {
+    type: "tf",
+    instruction: 'Zaokruži TRUE ako je ponuđeni odgovor tačan za datu rečenicu, FALSE ako nije.',
+    items: items.map((item, i) => {
+      if (correctIdx.has(i)) {
+        return { sentence: `${item.sentence} → "${item.answer}"`, answer: true };
+      }
+      const others = items.filter((_, j) => j !== i).map(o => o.answer);
+      const wrong = others.length > 0 ? shuffle(others)[0] : item.answer;
+      return { sentence: `${item.sentence} → "${wrong}"`, answer: wrong === item.answer };
+    }),
+  };
+}
+
+// A worksheet is one topic's generate() output (the "primary" task) plus a
+// second task built generically from the same word/sentence pool, so a
+// worksheet is more than a single 10-item task without hand-authoring extra
+// content per topic. Grades 1–2 stay reading-free (a second listen/color
+// round with translations stripped); everything else gets a translation- or
+// grammar-based second task appropriate to what the primary task produced.
+export function generateWorksheet(topicId, count) {
+  const data = TOPIC_DATA[topicId];
+  if (!data) return null;
+  const primary = data.generate(count);
+  const sections = [primary];
+  const young = isYoungGrade(topicId);
+
+  if (primary.type === "listen-circle" || primary.type === "color-boxes") {
+    if (young) {
+      primary.items.forEach(it => { delete it.sr; });
+      const second = data.generate(count);
+      second.items.forEach(it => { delete it.sr; });
+      sections.push(second);
+    } else {
+      const pairs = primary.items.map(it => ({ en: it.word, sr: it.sr })).filter(p => p.sr);
+      if (pairs.length > 0) {
+        sections.push({
+          type: "match",
+          instruction: "Povezi reč sa prevodom.",
+          pairs,
+          leftLabel: "English",
+          rightLabel: "Srpski",
+        });
+      }
+    }
+  } else if (primary.type === "match") {
+    sections.push(makeTFFromPairs(primary.pairs, primary.pairs.length));
+  } else if (primary.type === "fillin") {
+    const hasBase = primary.items.every(it => typeof it.base === "string");
+    if (hasBase) {
+      sections.push({
+        type: "match",
+        instruction: "Povezi glagol sa odgovarajućim oblikom.",
+        pairs: primary.items.map(it => ({ en: it.base, sr: it.answer })),
+        leftLabel: "Infinitive",
+        rightLabel: "Correct form",
+      });
+    } else {
+      sections.push(toSentenceTF(primary.items));
+    }
+  }
+
+  return sections;
+}
+
 // Every topic generator produces a different item shape (vocab word/emoji/sr,
 // match en/sr pairs, fillin sentence/answer, tf sentence/boolean). Flashcards
 // need one uniform {emoji, front, back} shape so the same modal can render
@@ -95,7 +181,8 @@ export function generateFlashcards(topicId, count) {
   if (!data) return null;
   const result = data.generate(count);
   const source = result.items || result.pairs || [];
-  return source.map(toFlashcard).filter(Boolean);
+  const cards = source.map(toFlashcard).filter(Boolean);
+  return isYoungGrade(topicId) ? cards.map(c => ({ ...c, back: "" })) : cards;
 }
 
 export const TOPIC_DATA = {

@@ -5,7 +5,7 @@ import { ListenCircleTask, ColorBoxTask, MatchTask, FillInTask, TrueFalseTask } 
 export default function PdfPreviewModal({
   open,
   topic,
-  tasks,
+  sections,
   studentName,
   selectedClass,
   showAnswers,
@@ -51,9 +51,9 @@ export default function PdfPreviewModal({
     win.onload = () => { win.focus(); win.print(); };
   };
 
-  if (!open || !tasks || !topic) return null;
+  if (!open || !sections || !topic) return null;
 
-  const exerciseCount = (tasks.items || tasks.pairs || []).length;
+  const exerciseCount = sections.reduce((sum, s) => sum + (s.items || s.pairs || []).length, 0);
 
   return createPortal(
     <div className="pdf-modal-overlay" onClick={onClose}>
@@ -96,11 +96,16 @@ export default function PdfPreviewModal({
                 <div className="ws-field-line">Grade: <span /></div>
               </div>
             </div>
-            {tasks.type === "listen-circle" && <ListenCircleTask data={tasks} />}
-            {tasks.type === "color-boxes" && <ColorBoxTask data={tasks} />}
-            {tasks.type === "match" && <MatchTask data={tasks} showAnswers={showAnswers} />}
-            {tasks.type === "fillin" && <FillInTask data={tasks} showAnswers={showAnswers} />}
-            {tasks.type === "tf" && <TrueFalseTask data={tasks} showAnswers={showAnswers} />}
+            {sections.map((sec, i) => (
+              <div key={i} style={{ marginTop: i > 0 ? 28 : 0 }}>
+                {sections.length > 1 && <div className="ws-badge" style={{ marginBottom: 10 }}>Zadatak {i + 1}</div>}
+                {sec.type === "listen-circle" && <ListenCircleTask data={sec} />}
+                {sec.type === "color-boxes" && <ColorBoxTask data={sec} />}
+                {sec.type === "match" && <MatchTask data={sec} showAnswers={showAnswers} />}
+                {sec.type === "fillin" && <FillInTask data={sec} showAnswers={showAnswers} />}
+                {sec.type === "tf" && <TrueFalseTask data={sec} showAnswers={showAnswers} />}
+              </div>
+            ))}
           </div>
         </div>
       </div>

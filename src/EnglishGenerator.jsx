@@ -4,7 +4,7 @@ import Logo from './Logo.jsx';
 import PdfPreviewModal from './PdfPreviewModal.jsx';
 import FlashcardModal from './FlashcardModal.jsx';
 import { styles } from './styles.js';
-import { TOPICS, TOPIC_DATA, generateTasks, generateFlashcards } from './worksheetContent.js';
+import { TOPICS, generateWorksheet, generateFlashcards } from './worksheetContent.js';
 import { fetchProfile } from './profileHelpers.js';
 import LandingPage from './LandingPage.jsx';
 import AdminPanel from './AdminPanel.jsx';
@@ -99,7 +99,6 @@ export default function EnglishGenerator() {
   const [count, setCount] = useState(10);
   const [tasks, setTasks] = useState(null);
   const [showAnswers, setShowAnswers] = useState(false);
-  const [taskType, setTaskType] = useState("match");
   const [pdfModal, setPdfModal] = useState(false);
   const [generateKey, setGenerateKey] = useState(0);
   const [flashcards, setFlashcards] = useState(null);
@@ -300,19 +299,13 @@ export default function EnglishGenerator() {
 
   const filteredTopics = grade ? TOPICS.filter(t => t.grade === grade) : [];
 
-  const currentTopicData = selectedTopic ? TOPIC_DATA[selectedTopic] : null;
-  const supportedTypes = currentTopicData?.supportedTypes;
-
   const selectTopic = (id) => {
     setSelectedTopic(id);
-    const td = TOPIC_DATA[id];
-    setTaskType(td?.supportedTypes?.[0] || "match");
   };
 
   const generate = () => {
     if (!selectedTopic) return;
-    const effectiveType = supportedTypes?.includes(taskType) ? taskType : undefined;
-    const result = generateTasks(selectedTopic, count, effectiveType);
+    const result = generateWorksheet(selectedTopic, count);
     setTasks(result);
     setShowAnswers(false);
     setPdfModal(true);
@@ -716,26 +709,6 @@ export default function EnglishGenerator() {
                 )}
               </div>
 
-              {supportedTypes && supportedTypes.length > 1 && (
-                <div className="field full" style={{ marginBottom: 16 }}>
-                  <label>Exercise type</label>
-                  <div className="type-pills">
-                    <button
-                      className={`type-pill ${taskType === "match" ? "active" : ""}`}
-                      onClick={() => setTaskType("match")}
-                    >
-                      🔗 Match
-                    </button>
-                    <button
-                      className={`type-pill ${taskType === "tf" ? "active" : ""}`}
-                      onClick={() => setTaskType("tf")}
-                    >
-                      ✓✗ True / False
-                    </button>
-                  </div>
-                </div>
-              )}
-
               <div className="config-row" style={{ marginBottom: 0 }}>
                 <div className="field">
                   <label>Class</label>
@@ -937,7 +910,7 @@ export default function EnglishGenerator() {
       <PdfPreviewModal
         open={pdfModal}
         topic={topic}
-        tasks={tasks}
+        sections={tasks}
         studentName={studentName}
         selectedClass={selectedClass}
         showAnswers={showAnswers}
