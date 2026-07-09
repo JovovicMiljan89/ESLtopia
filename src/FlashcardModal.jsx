@@ -87,7 +87,14 @@ export default function FlashcardModal({
             <div className={`flashcard-grid ${cardStyle === "outline" ? "outline" : ""}`}>
               {cards.map((c, i) => (
                 <div className={`flashcard ${cardStyle === "outline" ? "flashcard-outline" : "flashcard-color"}`} key={i}>
-                  <div className="flashcard-emoji">{c.emoji}</div>
+                  {cardStyle === "outline" ? (
+                    <div className="flashcard-emoji-outline">
+                      <span className="emoji-layer emoji-stroke">{c.emoji}</span>
+                      <span className="emoji-layer emoji-fill">{c.emoji}</span>
+                    </div>
+                  ) : (
+                    <div className="flashcard-emoji">{c.emoji}</div>
+                  )}
                   <div className="flashcard-word">{c.front}</div>
                   {c.back && <div className="flashcard-translation">{c.back}</div>}
                 </div>

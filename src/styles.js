@@ -2404,15 +2404,41 @@ export const styles = `
   .flashcard-color:nth-of-type(6n+5) { border-color: #d8c4f2; background: linear-gradient(135deg, #f8f3fd 0%, #ede0fa 100%); }
   .flashcard-color:nth-of-type(6n+0) { border-color: #f7b8c8; background: linear-gradient(135deg, #fff0f4 0%, #fde1e9 100%); }
 
-  /* Color-in set — thick dashed outline, silhouette emoji, bubble-outline word for kids to color themselves */
+  /* Color-in set — thick dashed border, outlined picture with a white
+     interior (not a flat silhouette) so there's actual white space to color,
+     plain black word for kids to color themselves */
   .flashcard-outline {
     background: #fff;
     border: 3px dashed #2d1b0e;
   }
-  .flashcard-outline .flashcard-emoji {
-    filter: grayscale(1) brightness(0);
-    opacity: 0.82;
+
+  /* Two stacked copies of the same emoji fake an "outline" out of a color
+     glyph (CSS can't do real edge-detection): a black silhouette scaled up
+     ~16% sits behind a white silhouette at 100%, so only a black ring shows
+     around a white, colorable interior. */
+  .flashcard-emoji-outline {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 8px;
   }
+  .flashcard-emoji-outline .emoji-layer {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 44px;
+    line-height: 1;
+  }
+  .flashcard-emoji-outline .emoji-stroke {
+    filter: grayscale(1) brightness(0);
+    transform: scale(1.16);
+  }
+  .flashcard-emoji-outline .emoji-fill {
+    filter: grayscale(1) brightness(0) invert(1);
+  }
+
   .flashcard-outline .flashcard-word { color: #2d1b0e; }
   .flashcard-outline .flashcard-translation { color: #b0a89f; }
 
@@ -2425,6 +2451,8 @@ export const styles = `
     .flashcard-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .flashcard { min-height: 140px; padding: 14px 8px; }
     .flashcard-emoji { font-size: 34px; }
+    .flashcard-emoji-outline { width: 44px; height: 44px; }
+    .flashcard-emoji-outline .emoji-layer { font-size: 34px; }
     .flashcard-word { font-size: 14px; }
   }
 
