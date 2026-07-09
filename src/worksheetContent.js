@@ -10,6 +10,7 @@ export const TOPICS = [
   { id: "family", emoji: "👨‍👩‍👧", name: "Family", desc: "Porodica — Stars & Heroes", grade: "1" },
   { id: "body", emoji: "🧍", name: "Body parts", desc: "Delovi tela — Mickey & friends", grade: "2" },
   { id: "food", emoji: "🍎", name: "Food", desc: "Hrana — Stars & Heroes", grade: "2" },
+  { id: "animal_babies", emoji: "🐣", name: "Animal Babies", desc: "Povezi životinju sa mladunčetom", grade: "2" },
   { id: "am_is_are", emoji: "✏️", name: "am / is / are", desc: "Mickey is happy — glagol to be", grade: "2" },
   { id: "a_an", emoji: "📝", name: "a / an", desc: "Neodređeni član — Stars & Heroes", grade: "2" },
   { id: "classroom", emoji: "🏫", name: "Classroom", desc: "Učionica — Stars & Heroes", grade: "2" },
@@ -204,6 +205,31 @@ function buildOddOneOut(topicId, groupCount) {
   } : null;
 }
 
+// "Circle the correct word" (picture + 3 word choices, one right) needs
+// reading, unlike odd-one-out which is picture-only — so unlike that one,
+// this is gated to grade 3+ topics only (isYoungGrade topics stay
+// listening/picture-based, no exception). Distractors come from the same
+// topic's own pool rather than a different topic's, since the point here is
+// testing precise word recognition within a category, not category sense.
+function buildCircleWord(topicId, count) {
+  if (isYoungGrade(topicId) || !ODD_ONE_OUT_TOPIC_IDS.includes(topicId)) return null;
+  const pool = getFullWordPool(topicId);
+  if (pool.length < 3) return null;
+
+  const chosen = shuffle(pool).slice(0, Math.min(count, pool.length));
+  const items = chosen.map(w => {
+    const distractors = shuffle(pool.filter(p => p.word !== w.word)).slice(0, 2);
+    const options = shuffle([w.word, ...distractors.map(d => d.word)]);
+    return { emoji: w.emoji, options, correctIndex: options.indexOf(w.word) };
+  });
+
+  return {
+    type: "circle-word",
+    instruction: "Zaokruži tačnu reč za svaku sličicu.",
+    items,
+  };
+}
+
 // A worksheet is one topic's generate() output (the "primary" task) plus a
 // second task built generically from the same word/sentence pool, so a
 // worksheet is more than a single 10-item task without hand-authoring extra
@@ -237,6 +263,8 @@ export function generateWorksheet(topicId, count) {
     }
     const oddOneOut = buildOddOneOut(topicId, Math.max(3, Math.min(6, Math.floor(count / 2))));
     if (oddOneOut) sections.push(oddOneOut);
+    const circleWord = buildCircleWord(topicId, Math.max(4, Math.min(8, count)));
+    if (circleWord) sections.push(circleWord);
   } else if (primary.type === "match") {
     sections.push(makeTFFromPairs(primary.pairs, primary.pairs.length));
   } else if (primary.type === "fillin") {
@@ -283,7 +311,13 @@ export function generateFlashcards(topicId, count) {
   const result = data.generate(count);
   const source = result.items || result.pairs || [];
   const cards = source.map(toFlashcard).filter(Boolean);
-  return isYoungGrade(topicId) ? cards.map(c => ({ ...c, back: "" })) : cards;
+  // Only strip the back face for picture-vocab topics (word/emoji/sr), where
+  // it really is a Serbian translation. Match-type topics carry a genuine
+  // answer on the back regardless of grade (e.g. animal_babies' baby-animal
+  // name, or past_simple_irregular's past-tense form) — stripping that would
+  // silently break the exercise, not just hide a translation.
+  const isTranslationBack = result.type === "listen-circle" || result.type === "color-boxes";
+  return isYoungGrade(topicId) && isTranslationBack ? cards.map(c => ({ ...c, back: "" })) : cards;
 }
 
 export const TOPIC_DATA = {
@@ -401,6 +435,34 @@ export const TOPIC_DATA = {
         instruction: "Nastavnik kaže hranu na engleskom. Zaokruži odgovarajuću sličicu! 🍎",
         teacherNote: "Izgovorite naziv hrane 2–3 puta. Deca zaokružuju sličicu.",
         items,
+      };
+    },
+  },
+
+  animal_babies: {
+    generate(count) {
+      // Distinct baby-animal names on purpose (not "calf" for both cow and
+      // elephant, etc.) — a match exercise with two identical right-side
+      // answers is genuinely ambiguous, not just a content nitpick.
+      const pairs = shuffle([
+        { en: "cat", sr: "kitten" },
+        { en: "dog", sr: "puppy" },
+        { en: "cow", sr: "calf" },
+        { en: "horse", sr: "foal" },
+        { en: "bird", sr: "chick" },
+        { en: "rabbit", sr: "kit" },
+        { en: "lion", sr: "cub" },
+        { en: "monkey", sr: "infant" },
+        { en: "snake", sr: "hatchling" },
+        { en: "frog", sr: "tadpole" },
+        { en: "fish", sr: "fry" },
+      ]).slice(0, Math.min(count, 11));
+      return {
+        type: "match",
+        instruction: "Povezi životinju sa njenim mladunčetom.",
+        pairs,
+        leftLabel: "Animal",
+        rightLabel: "Baby",
       };
     },
   },

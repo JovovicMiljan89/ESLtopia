@@ -1638,6 +1638,40 @@ export const styles = `
   .odd-item .listen-card-word { font-size: 12px; }
   .odd-item.odd-answer { border-color: #ff6b6b; background: #ffe3e3; }
 
+  .circle-word-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+    margin-top: 12px;
+  }
+  .circle-word-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 10px;
+    border-radius: 14px;
+    background: #fffdfb;
+    border: 1.5px solid #fff0e8;
+  }
+  .circle-word-emoji { font-size: 36px; line-height: 1; }
+  .circle-word-options { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .circle-word-option {
+    border: 2px dashed #fdc9a9;
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: #2d1b0e;
+  }
+  .circle-word-option.correct {
+    border-color: #51cf66;
+    border-style: solid;
+    background: #d3f9d8;
+    color: #2b8a3e;
+  }
+
   .teacher-note {
     margin-top: 10px;
     padding: 8px 12px;

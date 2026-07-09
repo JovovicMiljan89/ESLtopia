@@ -12,6 +12,32 @@ export function shuffle(arr) {
   return result;
 }
 
+export function CircleWordTask({ data, showAnswers }) {
+  return (
+    <div>
+      <div className="section-title">Zaokruži tačnu reč 🔤</div>
+      <p style={{ fontSize: 13, color: "#9b7060", marginBottom: 8 }}>{data.instruction}</p>
+      <div className="circle-word-grid">
+        {data.items.map((item, i) => (
+          <div className="circle-word-item" key={i}>
+            <div className="circle-word-emoji">{item.emoji}</div>
+            <div className="circle-word-options">
+              {item.options.map((opt, j) => (
+                <span
+                  key={j}
+                  className={`circle-word-option${showAnswers && j === item.correctIndex ? " correct" : ""}`}
+                >
+                  {opt}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function OddOneOutTask({ data, showAnswers }) {
   return (
     <div>
