@@ -105,6 +105,58 @@ function toSentenceTF(items) {
   };
 }
 
+// Topics with a plain word/emoji/sr picture pool that's meaningfully
+// "categorizable" — excludes alphabet (letters) and numbers, since a letter
+// or digit dropped into a word list isn't an odd-one-out in the same sense,
+// and excludes colors, whose items have no emoji (they're colored in blank,
+// not pictured) so it'd show as an empty box wherever it's used.
+const ODD_ONE_OUT_TOPIC_IDS = [
+  "animals", "family", "body", "food", "classroom",
+  "toys", "my_home", "seasons_weather", "places_in_town", "sea_world", "at_school",
+];
+
+// count=50 is comfortably above every real vocab pool's size (all are ≤16),
+// so this just returns the topic's full word list rather than a sample.
+function getFullWordPool(topicId) {
+  const data = TOPIC_DATA[topicId];
+  if (!data) return [];
+  const result = data.generate(50);
+  return result.items || [];
+}
+
+// Groups of 4 pictures where 3 belong to the topic and 1 is "borrowed" from
+// a different topic's pool — picture-only (no sr) since recognizing the
+// mismatched category doesn't need reading, and works the same for every
+// grade. Skipped for topics with too small a pool or no other topic to
+// borrow from.
+function buildOddOneOut(topicId, groupCount) {
+  if (!ODD_ONE_OUT_TOPIC_IDS.includes(topicId)) return null;
+  const ownPool = shuffle(getFullWordPool(topicId));
+  const otherIds = ODD_ONE_OUT_TOPIC_IDS.filter(id => id !== topicId);
+  if (ownPool.length < 3 || otherIds.length === 0) return null;
+
+  const groups = [];
+  const numGroups = Math.min(groupCount, Math.floor(ownPool.length / 3));
+  for (let i = 0; i < numGroups; i++) {
+    const belongs = ownPool.slice(i * 3, i * 3 + 3);
+    if (belongs.length < 3) break;
+    const intruderPool = getFullWordPool(shuffle(otherIds)[0]);
+    if (intruderPool.length === 0) continue;
+    const intruder = shuffle(intruderPool)[0];
+    const words = shuffle([
+      ...belongs.map(w => ({ word: w.word, emoji: w.emoji, isIntruder: false })),
+      { word: intruder.word, emoji: intruder.emoji, isIntruder: true },
+    ]);
+    groups.push({ words, oddIndex: words.findIndex(w => w.isIntruder) });
+  }
+
+  return groups.length > 0 ? {
+    type: "odd-one-out",
+    instruction: "Zaokruži reč koja ne pripada grupi.",
+    groups,
+  } : null;
+}
+
 // A worksheet is one topic's generate() output (the "primary" task) plus a
 // second task built generically from the same word/sentence pool, so a
 // worksheet is more than a single 10-item task without hand-authoring extra
@@ -136,6 +188,8 @@ export function generateWorksheet(topicId, count) {
         });
       }
     }
+    const oddOneOut = buildOddOneOut(topicId, Math.max(3, Math.min(6, Math.floor(count / 2))));
+    if (oddOneOut) sections.push(oddOneOut);
   } else if (primary.type === "match") {
     sections.push(makeTFFromPairs(primary.pairs, primary.pairs.length));
   } else if (primary.type === "fillin") {

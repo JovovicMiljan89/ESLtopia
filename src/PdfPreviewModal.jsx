@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { ListenCircleTask, ColorBoxTask, MatchTask, FillInTask, TrueFalseTask } from "./WorksheetTasks.jsx";
+import { ListenCircleTask, ColorBoxTask, MatchTask, FillInTask, TrueFalseTask, OddOneOutTask } from "./WorksheetTasks.jsx";
 
 export default function PdfPreviewModal({
   open,
@@ -53,7 +53,7 @@ export default function PdfPreviewModal({
 
   if (!open || !sections || !topic) return null;
 
-  const exerciseCount = sections.reduce((sum, s) => sum + (s.items || s.pairs || []).length, 0);
+  const exerciseCount = sections.reduce((sum, s) => sum + (s.items || s.pairs || s.groups || []).length, 0);
 
   return createPortal(
     <div className="pdf-modal-overlay" onClick={onClose}>
@@ -104,6 +104,7 @@ export default function PdfPreviewModal({
                 {sec.type === "match" && <MatchTask data={sec} showAnswers={showAnswers} />}
                 {sec.type === "fillin" && <FillInTask data={sec} showAnswers={showAnswers} />}
                 {sec.type === "tf" && <TrueFalseTask data={sec} showAnswers={showAnswers} />}
+                {sec.type === "odd-one-out" && <OddOneOutTask data={sec} showAnswers={showAnswers} />}
               </div>
             ))}
           </div>

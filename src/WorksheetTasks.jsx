@@ -12,6 +12,33 @@ export function shuffle(arr) {
   return result;
 }
 
+export function OddOneOutTask({ data, showAnswers }) {
+  return (
+    <div>
+      <div className="section-title">Zaokruži tuđinca 🔍</div>
+      <p style={{ fontSize: 13, color: "#9b7060", marginBottom: 8 }}>{data.instruction}</p>
+      <div className="odd-groups">
+        {data.groups.map((g, i) => (
+          <div className="odd-group" key={i}>
+            <span className="odd-group-num">{i + 1}.</span>
+            <div className="odd-group-items">
+              {g.words.map((w, j) => (
+                <div
+                  className={`listen-card odd-item${showAnswers && j === g.oddIndex ? " odd-answer" : ""}`}
+                  key={j}
+                >
+                  <div className="listen-card-emoji">{w.emoji}</div>
+                  <div className="listen-card-word">{w.word}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function ListenCircleTask({ data }) {
   return (
     <div>

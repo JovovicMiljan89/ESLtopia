@@ -1620,6 +1620,24 @@ export const styles = `
     color: #c4a498;
     text-align: center;
   }
+
+  .odd-groups { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }
+  .odd-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 14px;
+    background: #fffdfb;
+    border: 1.5px solid #fff0e8;
+  }
+  .odd-group-num { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px; color: #9b7060; }
+  .odd-group-items { display: flex; gap: 10px; flex-wrap: wrap; }
+  .odd-item { width: 96px; min-height: 84px; padding: 10px 6px 8px; }
+  .odd-item .listen-card-emoji { font-size: 30px; }
+  .odd-item .listen-card-word { font-size: 12px; }
+  .odd-item.odd-answer { border-color: #ff6b6b; background: #ffe3e3; }
+
   .teacher-note {
     margin-top: 10px;
     padding: 8px 12px;
