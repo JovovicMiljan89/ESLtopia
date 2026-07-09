@@ -56,6 +56,31 @@ export function PictureShadowTask({ data, showAnswers }) {
   );
 }
 
+export function ColorByNumberTask({ data }) {
+  return (
+    <div>
+      <div className="section-title">Oboj po brojevima 🔢</div>
+      <p style={{ fontSize: 13, color: "#9b7060", marginBottom: 8 }}>{data.instruction}</p>
+      <div className="color-legend">
+        {data.legend.map(l => (
+          <div className="color-legend-item" key={l.num}>
+            <span className="color-legend-swatch" style={{ background: l.hex }} />
+            <span className="color-legend-num">{l.num}</span>
+          </div>
+        ))}
+      </div>
+      <div className="color-by-number-grid">
+        {data.items.map((item, i) => (
+          <div className="color-by-number-item" key={i}>
+            <div className="color-by-number-badge">{item.number}</div>
+            <img src={item.outline} alt={item.word} className="color-by-number-icon" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function TraceLettersTask({ data }) {
   return (
     <div>

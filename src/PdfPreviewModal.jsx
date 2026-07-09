@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { ListenCircleTask, ColorBoxTask, MatchTask, FillInTask, TrueFalseTask, OddOneOutTask, CircleWordTask, PictureShadowTask, TraceLettersTask } from "./WorksheetTasks.jsx";
+import { ListenCircleTask, ColorBoxTask, MatchTask, FillInTask, TrueFalseTask, OddOneOutTask, CircleWordTask, PictureShadowTask, ColorByNumberTask, TraceLettersTask } from "./WorksheetTasks.jsx";
 
 export default function PdfPreviewModal({
   open,
@@ -107,6 +107,7 @@ export default function PdfPreviewModal({
                 {sec.type === "odd-one-out" && <OddOneOutTask data={sec} showAnswers={showAnswers} />}
                 {sec.type === "circle-word" && <CircleWordTask data={sec} showAnswers={showAnswers} />}
                 {sec.type === "picture-shadow" && <PictureShadowTask data={sec} showAnswers={showAnswers} />}
+                {sec.type === "color-by-number" && <ColorByNumberTask data={sec} />}
                 {sec.type === "trace-letters" && <TraceLettersTask data={sec} />}
               </div>
             ))}

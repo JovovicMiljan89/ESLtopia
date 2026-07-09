@@ -1704,6 +1704,65 @@ export const styles = `
   }
   .trace-letter-svg { width: 100%; height: 110px; }
 
+  .color-legend {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin: 10px 0 16px;
+    padding: 10px 14px;
+    background: #fffdfb;
+    border: 1.5px dashed #fdc9a9;
+    border-radius: 12px;
+  }
+  .color-legend-item { display: flex; align-items: center; gap: 6px; }
+  .color-legend-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(0,0,0,0.15);
+    display: inline-block;
+  }
+  .color-legend-num {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    color: #2d1b0e;
+  }
+
+  .color-by-number-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 14px;
+  }
+  .color-by-number-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 10px;
+    border: 1.5px solid #fff0e8;
+    border-radius: 14px;
+    background: #fffdfb;
+  }
+  .color-by-number-icon { width: 48px; height: 48px; }
+  .color-by-number-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1.5px solid #f76707;
+    color: #f76707;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .teacher-note {
     margin-top: 10px;
     padding: 8px 12px;

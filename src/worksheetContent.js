@@ -278,6 +278,46 @@ function buildTraceLetters(topicId, count) {
   };
 }
 
+// Fixed palette for "colour by numbers" — not tied to the colors topic's
+// word data at all, since a legend of number → color WORD would require
+// reading. A number next to an actual colored swatch is matched by sight,
+// so this works for every grade including 1-2, same as picture-shadow.
+const COLOR_BY_NUMBER_PALETTE = [
+  { num: 1, hex: "#ffd43b" },
+  { num: 2, hex: "#ff6b6b" },
+  { num: 3, hex: "#4dabf7" },
+  { num: 4, hex: "#69db7c" },
+  { num: 5, hex: "#da77f2" },
+  { num: 6, hex: "#ffa94d" },
+];
+
+function buildColorByNumbers(topicId, count) {
+  if (!ODD_ONE_OUT_TOPIC_IDS.includes(topicId)) return null;
+  const pool = getFullWordPool(topicId);
+  const withIcons = pool.map(w => ({ word: w.word, icons: iconPaths(w.emoji) })).filter(w => w.icons);
+  if (withIcons.length < 4) return null;
+
+  const numColors = Math.min(6, Math.max(3, Math.ceil(withIcons.length / 3)));
+  const legend = COLOR_BY_NUMBER_PALETTE.slice(0, numColors);
+  const chosen = shuffle(withIcons).slice(0, Math.min(count, withIcons.length));
+  // Cycling through the legend (rather than a random pick per item) spreads
+  // every number across the picture grid instead of risking one number
+  // dominating by chance — chosen is already shuffled, so which word lands
+  // on which number still varies between generations.
+  const items = chosen.map((w, i) => ({
+    word: w.word,
+    outline: w.icons.outline,
+    number: legend[i % legend.length].num,
+  }));
+
+  return {
+    type: "color-by-number",
+    instruction: "Oboj svaku sličicu bojom koja odgovara njenom broju.",
+    legend,
+    items,
+  };
+}
+
 // A worksheet is one topic's generate() output (the "primary" task) plus a
 // second task built generically from the same word/sentence pool, so a
 // worksheet is more than a single 10-item task without hand-authoring extra
@@ -315,6 +355,8 @@ export function generateWorksheet(topicId, count) {
     if (circleWord) sections.push(circleWord);
     const pictureShadow = buildPictureShadow(topicId, Math.max(4, Math.min(8, count)));
     if (pictureShadow) sections.push(pictureShadow);
+    const colorByNumbers = buildColorByNumbers(topicId, Math.max(4, Math.min(8, count)));
+    if (colorByNumbers) sections.push(colorByNumbers);
     const traceLetters = buildTraceLetters(topicId, Math.min(count, 10));
     if (traceLetters) sections.push(traceLetters);
   } else if (primary.type === "match") {
