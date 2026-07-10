@@ -38,3 +38,32 @@ export async function requireSchool(
   }
   return { svc, schoolId: user.id };
 }
+
+// Verify the caller is an authenticated, active user of any role (teacher,
+// school, or superadmin). Throws a Response (401/403) otherwise. Returns the
+// service client + user id.
+export async function requireUser(
+  req: Request,
+): Promise<{ svc: SupabaseClient; userId: string }> {
+  const token = (req.headers.get('Authorization') ?? '').replace('Bearer ', '').trim();
+  if (!token) throw new Response(JSON.stringify({ error: 'Missing token' }), { status: 401 });
+
+  const svc = serviceClient();
+  const { data: { user }, error } = await svc.auth.getUser(token);
+  if (error || !user) {
+    throw new Response(JSON.stringify({ error: 'Invalid token' }), { status: 401 });
+  }
+
+  const { data: profile } = await svc
+    .from('profiles')
+    .select('status')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile || profile.status !== 'active') {
+    throw new Response(JSON.stringify({ error: 'Forbidden — active account required' }), {
+      status: 403,
+    });
+  }
+  return { svc, userId: user.id };
+}
