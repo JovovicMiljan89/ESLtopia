@@ -80,14 +80,38 @@ async function makeGrayscale(originalBuffer) {
 // potrace works on a clean, modestly-sized bitmap -- resizing keeps tracing
 // fast and the resulting path from being absurdly over-detailed. PNG (not
 // JPEG) going in, so compression artifacts don't turn into noise in the
-// traced outline.
-async function resizeForTracing(originalBuffer) {
-  return sharp(originalBuffer).resize(400, 400, { fit: 'inside' }).png().toBuffer();
+// traced outline. grayscale+normalize (contrast stretch) gives potrace's
+// single-threshold cutoff the best chance at a clean subject/background
+// split regardless of the source image's original tonal range.
+//
+// category-dependent blur, verified empirically against real Pixabay
+// results (not just the clean test icon this was first built against --
+// see git history for the actual before/after renders):
+//   - "photo": NO blur. Real photos already have a continuous-tone,
+//     often-touching subject/background (grass, dirt, shadows near the
+//     same brightness as the subject) -- blurring merges the subject INTO
+//     the background instead of smoothing it, making tracing worse.
+//   - "illustration": blur(8). Flat-color vector-style illustrations have
+//     a clean, isolated white/plain background, so blur can't merge
+//     subject-into-background the way it does for photos -- instead it
+//     merges the subject's OWN internal color regions (e.g. a giraffe's
+//     spots), which otherwise fragment potrace's trace into a dozen-plus
+//     disconnected patches instead of one whole-animal outline.
+async function resizeForTracing(originalBuffer, category) {
+  let pipeline = sharp(originalBuffer)
+    .resize(400, 400, { fit: 'inside' })
+    .flatten({ background: '#ffffff' })
+    .grayscale()
+    .normalize();
+  if (category === 'illustration') pipeline = pipeline.blur(8);
+  return pipeline.png().toBuffer();
 }
 
+// turdSize despeckles tiny noise regions (JPEG compression artifacts, stray
+// pixels) before they become their own tiny subpaths.
 function traceToPathData(buffer) {
   return new Promise((resolve, reject) => {
-    potrace.trace(buffer, {}, (err, svg) => {
+    potrace.trace(buffer, { turdSize: 100 }, (err, svg) => {
       if (err) return reject(err);
       const pathMatch = svg.match(/<path[^>]*\sd="([^"]+)"/);
       const viewBoxMatch = svg.match(/viewBox="0 0 (\d+(?:\.\d+)?) (\d+(?:\.\d+)?)"/);
@@ -156,12 +180,21 @@ function parsePathToSubpaths(d, segmentsPerCurve = 20) {
   return subpaths;
 }
 
-function polylineLength(points) {
-  let length = 0;
-  for (let i = 1; i < points.length; i++) {
-    length += Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+// Shoelace formula -- signed area of a closed polygon; abs() since winding
+// direction (outer boundary vs a "hole" subpath) doesn't matter for ranking
+// by size. Enclosed area, not perimeter length, is what actually identifies
+// "the main subject": a small but jagged/textured region (leaves, fur
+// texture, background noise) can easily have MORE total perimeter than a
+// large smooth one, which made an earlier arc-length-based version of this
+// pick a scribble of background texture over the actual subject outline.
+function polygonArea(points) {
+  let sum = 0;
+  for (let i = 0; i < points.length; i++) {
+    const a = points[i];
+    const b = points[(i + 1) % points.length];
+    sum += a.x * b.y - b.x * a.y;
   }
-  return length;
+  return Math.abs(sum) / 2;
 }
 
 // Walks a polyline's cumulative arc length and samples `count` points at
@@ -190,16 +223,17 @@ function sampleEvenlySpaced(points, count) {
   return sampled;
 }
 
-async function makeDotted(originalBuffer) {
-  const resized = await resizeForTracing(originalBuffer);
+async function makeDotted(originalBuffer, category) {
+  const resized = await resizeForTracing(originalBuffer, category);
   const { d, width, height } = await traceToPathData(resized);
 
   const subpaths = parsePathToSubpaths(d);
   if (subpaths.length === 0) throw new Error('no traceable outline found');
-  // A traced photo can produce several disconnected blobs (shadow, background
-  // noise, etc) -- connect-the-dots wants ONE clean outline of the main
-  // subject, so only the longest subpath is sampled.
-  const mainOutline = subpaths.reduce((a, b) => (polylineLength(b) > polylineLength(a) ? b : a));
+  // A traced image can produce several disconnected blobs (shadow, a
+  // separate small background patch, etc) -- connect-the-dots wants ONE
+  // clean outline of the main subject, so only the largest-by-area subpath
+  // is sampled.
+  const mainOutline = subpaths.reduce((a, b) => (polygonArea(b) > polygonArea(a) ? b : a));
   const dots = sampleEvenlySpaced(mainOutline, DOT_COUNT);
 
   const w = width ?? Math.max(...mainOutline.map((p) => p.x)) + 10;
@@ -216,8 +250,8 @@ async function makeDotted(originalBuffer) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}">\n  ${dotMarkup}\n</svg>\n`;
 }
 
-async function makeSilhouette(originalBuffer) {
-  const resized = await resizeForTracing(originalBuffer);
+async function makeSilhouette(originalBuffer, category) {
+  const resized = await resizeForTracing(originalBuffer, category);
   const { svg } = await traceToPathData(resized);
   // potrace.trace() already returns a full <svg> with a filled path -- that
   // IS the silhouette, no further processing needed.
@@ -256,8 +290,8 @@ async function processWord(category, slug) {
 
   if (needed.blurred) await upload(`${folder}/blurred.jpg`, await makeBlurred(original), 'image/jpeg');
   if (needed.grayscale) await upload(`${folder}/grayscale.jpg`, await makeGrayscale(original), 'image/jpeg');
-  if (needed.dotted) await upload(`${folder}/dotted.svg`, Buffer.from(await makeDotted(original)), 'image/svg+xml');
-  if (needed.silhouette) await upload(`${folder}/silhouette.svg`, Buffer.from(await makeSilhouette(original)), 'image/svg+xml');
+  if (needed.dotted) await upload(`${folder}/dotted.svg`, Buffer.from(await makeDotted(original, category)), 'image/svg+xml');
+  if (needed.silhouette) await upload(`${folder}/silhouette.svg`, Buffer.from(await makeSilhouette(original, category)), 'image/svg+xml');
 }
 
 async function main() {
