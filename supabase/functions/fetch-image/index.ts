@@ -107,9 +107,18 @@ Deno.serve(async (req) => {
       return json({ error: `No ${category} results for "${query}"` }, 404);
     }
 
-    const imageRes = await fetch(hit.webformatURL);
+    const imageRes = await fetch(hit.webformatURL, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ESLtopia/1.0; +https://esltopia.vercel.app)' },
+    });
     if (!imageRes.ok) {
-      return json({ error: 'Could not download image from Pixabay' }, 502);
+      const bodySnippet = await imageRes.text().catch(() => '');
+      return json(
+        {
+          error: `Could not download image from Pixabay (${imageRes.status} ${imageRes.statusText})`,
+          detail: bodySnippet.slice(0, 300),
+        },
+        502,
+      );
     }
     const imageBlob = await imageRes.blob();
     const contentType = imageRes.headers.get('content-type') || 'image/jpeg';
