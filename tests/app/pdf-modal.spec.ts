@@ -4,11 +4,11 @@
 // worksheet generator. Redesigned in commit dc30d0f (light card-style header +
 // action bar).
 //
-// "am / is / are" is used as the fixture topic (Grade 2) because its generator
+// "Am/is/are" is used as the fixture topic (Grade 4) because its generator
 // always returns type "fillin" as the primary section, so that section's
 // markup is deterministic across runs. Topic cards only render once a grade
 // is picked (grade-picker UI, see EnglishGenerator.jsx), so every flow here
-// selects Grade 2 first. Worksheets are multi-section since generateWorksheet()
+// selects Grade 4 first. Worksheets are multi-section since generateWorksheet()
 // (worksheetContent.js) — am/is/are gets a fillin primary + a true/false
 // secondary — so assertions on `.answer-key` etc. must expect that both
 // sections render their own copy, not exactly one.
@@ -26,8 +26,8 @@ test.beforeAll(async () => {
 
 async function openGeneratedWorksheet(page: import('@playwright/test').Page) {
   await loginToApp(page, teacherEmail, PASSWORD);
-  await page.getByRole('button', { name: /^Grade 2/ }).click();
-  await page.locator('.topic-card', { hasText: 'am / is / are' }).click();
+  await page.getByRole('button', { name: /^Grade 4/ }).click();
+  await page.locator('.topic-card', { hasText: 'Am/is/are' }).click();
   await page.getByRole('button', { name: /generate worksheet/i }).click();
   await expect(page.locator('.pdf-modal-card')).toBeVisible();
 }
@@ -35,8 +35,8 @@ async function openGeneratedWorksheet(page: import('@playwright/test').Page) {
 test.describe('PDF preview modal', () => {
   test('generating a worksheet opens the modal with topic and grade info', async ({ page }) => {
     await openGeneratedWorksheet(page);
-    await expect(page.locator('.pdf-modal-title')).toHaveText('am / is / are');
-    await expect(page.locator('.pdf-modal-subtitle')).toContainText('Grade 2');
+    await expect(page.locator('.pdf-modal-title')).toHaveText('Am/is/are');
+    await expect(page.locator('.pdf-modal-subtitle')).toContainText('Grade 4');
     await expect(page.locator('.pdf-modal-subtitle')).toContainText('exercises');
   });
 

@@ -313,6 +313,32 @@ export const styles = `
 
   .topic-card.active .topic-desc { color: #fdc9a9; }
 
+  .topic-card.soon {
+    cursor: not-allowed;
+    opacity: 0.55;
+    position: relative;
+  }
+
+  .topic-card.soon:hover {
+    border-color: #fff4f0;
+    background: #fff;
+    transform: none;
+    box-shadow: 0 2px 8px rgba(60, 30, 15, 0.04);
+  }
+
+  .topic-soon-badge {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: #f1e4dc;
+    color: #9b7060;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
   .gen-btn {
     width: 100%;
     background: linear-gradient(135deg, #f76707 0%, #e64980 100%);

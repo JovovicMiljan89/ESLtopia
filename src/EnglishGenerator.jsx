@@ -692,12 +692,13 @@ export default function EnglishGenerator() {
                     {filteredTopics.map(t => (
                       <div
                         key={t.id}
-                        className={`topic-card ${selectedTopic === t.id ? "active" : ""}`}
-                        onClick={() => selectTopic(t.id)}
+                        className={`topic-card ${selectedTopic === t.id ? "active" : ""} ${t.comingSoon ? "soon" : ""}`}
+                        onClick={() => { if (!t.comingSoon) selectTopic(t.id); }}
                       >
                         <div className="topic-emoji">{t.emoji}</div>
                         <div className="topic-name">{t.name}</div>
                         <div className="topic-desc">{t.desc} · Grade {t.grade}</div>
+                        {t.comingSoon && <div className="topic-soon-badge">Uskoro</div>}
                       </div>
                     ))}
                   </div>
