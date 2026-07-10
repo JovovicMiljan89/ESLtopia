@@ -30,20 +30,20 @@ export const TOPICS = [
 
   // ── Grade 2 ──────────────────────────────────────────────────────────────
   { id: "numbers", emoji: "🔢", name: "Numbers 1-20", desc: "Brojevi — Stars & Heroes", grade: "2" },
-  { id: "g2_colours", emoji: "🎨", name: "Colours", desc: "Boje", grade: "2", comingSoon: true },
+  { id: "g2_colours", emoji: "🎨", name: "Colours", desc: "Boje", grade: "2" },
   { id: "at_school", emoji: "🎒", name: "At school", desc: "U školi — ljudi, mesta i predmeti", grade: "2" },
-  { id: "g2_feelings", emoji: "🙂", name: "Feelings", desc: "Osećanja", grade: "2", comingSoon: true },
-  { id: "g2_family", emoji: "👨‍👩‍👧", name: "Family", desc: "Porodica", grade: "2", comingSoon: true },
-  { id: "g2_body_face", emoji: "🙂", name: "Body and face", desc: "Telo i lice", grade: "2", comingSoon: true },
-  { id: "g2_five_senses", emoji: "👂", name: "Our five senses", desc: "Naših pet čula", grade: "2", comingSoon: true },
+  { id: "g2_feelings", emoji: "🙂", name: "Feelings", desc: "Osećanja", grade: "2" },
+  { id: "g2_family", emoji: "👨‍👩‍👧", name: "Family", desc: "Porodica", grade: "2" },
+  { id: "g2_body_face", emoji: "🙂", name: "Body and face", desc: "Telo i lice", grade: "2" },
+  { id: "g2_five_senses", emoji: "👂", name: "Our five senses", desc: "Naših pet čula", grade: "2" },
   { id: "animal_babies", emoji: "🐣", name: "Animals and Baby animals", desc: "Povezi životinju sa mladunčetom", grade: "2" },
-  { id: "g2_can_cant", emoji: "💪", name: "Can & Can't", desc: "Šta umem, a šta ne", grade: "2", comingSoon: true },
+  { id: "g2_can_cant", emoji: "💪", name: "Can & Can't", desc: "Šta umem, a šta ne", grade: "2" },
   { id: "toys", emoji: "🧸", name: "My things (toys)", desc: "Igračke — Mickey & friends", grade: "2" },
-  { id: "g2_food_like", emoji: "🍔", name: "Food + Like/don't like", desc: "Hrana — sviđa mi se / ne sviđa mi se", grade: "2", comingSoon: true },
-  { id: "g2_free_time", emoji: "🎮", name: "My free time", desc: "Moje slobodno vreme", grade: "2", comingSoon: true },
+  { id: "g2_food_like", emoji: "🍔", name: "Food + Like/don't like", desc: "Hrana — sviđa mi se / ne sviđa mi se", grade: "2" },
+  { id: "g2_free_time", emoji: "🎮", name: "My free time", desc: "Moje slobodno vreme", grade: "2" },
   { id: "my_home", emoji: "🏠", name: "My home", desc: "Moj dom — sobe i nameštaj", grade: "2" },
   { id: "clothes", emoji: "👕", name: "Clothes", desc: "Minnie's dress, Donald's hat…", grade: "2" },
-  { id: "g2_seasons_weather", emoji: "☀️", name: "Seasons and the weather", desc: "Godišnja doba i vreme", grade: "2", comingSoon: true },
+  { id: "g2_seasons_weather", emoji: "☀️", name: "Seasons and the weather", desc: "Godišnja doba i vreme", grade: "2" },
   { id: "a_an", emoji: "📝", name: "a / an", desc: "Neodređeni član — Stars & Heroes", grade: "2" },
 
   // ── Grade 3 ──────────────────────────────────────────────────────────────
@@ -233,6 +233,7 @@ const ODD_ONE_OUT_TOPIC_IDS = [
   "toys", "my_home", "seasons_weather", "places_in_town", "sea_world", "at_school",
   "g1_my_room", "g1_shapes", "g1_feelings", "g1_my_body", "g1_clothes",
   "g1_nature", "g1_animals_activities",
+  "g2_feelings", "g2_family", "g2_body_face", "g2_five_senses", "g2_free_time", "g2_seasons_weather",
 ];
 
 // count=50 is comfortably above every real vocab pool's size (all are ≤16),
@@ -905,6 +906,177 @@ export const TOPIC_DATA = {
         instruction: 'Stavi "a" ili "an" ispred imenice. ⭐ Hint: an + samoglasnik (a, e, i, o, u), a + suglasnik!',
         wordBank: ["a", "an"],
         items: pool.map(p => ({ sentence: p.sentence, answer: p.answer, hint: p.hint })),
+      };
+    },
+  },
+
+  // ── Grade 2 curriculum additions (batch 2) ──────────────────────────────
+  g2_colours: {
+    generate(count) {
+      const all = [
+        { word: "red", sr: "crvena" }, { word: "blue", sr: "plava" },
+        { word: "green", sr: "zelena" }, { word: "yellow", sr: "žuta" },
+        { word: "orange", sr: "narandžasta" }, { word: "purple", sr: "ljubičasta" },
+        { word: "pink", sr: "roze" }, { word: "black", sr: "crna" },
+        { word: "white", sr: "bela" }, { word: "brown", sr: "braon" },
+        { word: "grey", sr: "siva" }, { word: "gold", sr: "zlatna" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 12));
+      return {
+        type: "color-boxes",
+        instruction: "Oboj svako polje bojom koja piše ispod! 🖍️",
+        teacherNote: "Nastavnik čita svaku boju na engleskom (2×). Deca boje polje odgovarajućom bojom.",
+        items,
+      };
+    },
+  },
+
+  g2_feelings: {
+    generate(count) {
+      const all = [
+        { word: "surprised", emoji: "😲", sr: "iznenađen" }, { word: "worried", emoji: "😟", sr: "zabrinut" },
+        { word: "calm", emoji: "😌", sr: "smiren" }, { word: "silly", emoji: "🤪", sr: "blesav" },
+        { word: "proud", emoji: "🥹", sr: "ponosan" }, { word: "bored", emoji: "🥱", sr: "dosadno mu je" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 6));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže osećanje na engleskom. Zaokruži odgovarajuću sličicu! 🙂",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu i mogu oponašati izraz lica.",
+        items,
+      };
+    },
+  },
+
+  g2_family: {
+    generate(count) {
+      const all = [
+        { word: "cousin", emoji: "🧑‍🤝‍🧑", sr: "rođak/rođaka" }, { word: "twins", emoji: "👯", sr: "blizanci" },
+        { word: "parents", emoji: "👨‍👩‍👧", sr: "roditelji" }, { word: "grandparents", emoji: "🧓", sr: "baka i deda" },
+        { word: "aunt", emoji: "👩‍🦰", sr: "tetka" }, { word: "uncle", emoji: "👨‍🦱", sr: "ujak/stric" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 6));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže člana porodice na engleskom. Zaokruži odgovarajuću sličicu! 👨‍👩‍👧",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  g2_body_face: {
+    generate(count) {
+      const all = [
+        { word: "eye", emoji: "👁️", sr: "oko" }, { word: "nose", emoji: "👃", sr: "nos" },
+        { word: "mouth", emoji: "👄", sr: "usta" }, { word: "ear", emoji: "👂", sr: "uho" },
+        { word: "tongue", emoji: "👅", sr: "jezik" }, { word: "tooth", emoji: "🦷", sr: "zub" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 6));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže deo lica na engleskom. Zaokruži odgovarajuću sličicu! 🙂",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu i mogu pokazati na sebi.",
+        items,
+      };
+    },
+  },
+
+  g2_five_senses: {
+    generate(count) {
+      const all = [
+        { word: "sight", emoji: "👀", sr: "vid" }, { word: "hearing", emoji: "👂", sr: "sluh" },
+        { word: "smell", emoji: "👃", sr: "miris" }, { word: "taste", emoji: "👅", sr: "ukus" },
+        { word: "touch", emoji: "✋", sr: "dodir" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 5));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže naše čulo na engleskom. Zaokruži odgovarajuću sličicu! 👂",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu koja odgovara čulu.",
+        items,
+      };
+    },
+  },
+
+  g2_can_cant: {
+    generate(count) {
+      const pool = shuffle([
+        { sentence: "A bird ___ fly.", answer: "can", hint: "(sposobnost)" },
+        { sentence: "A fish ___ walk.", answer: "can't", hint: "(nemogućnost)" },
+        { sentence: "I ___ swim.", answer: "can", hint: "(sposobnost)" },
+        { sentence: "A dog ___ talk.", answer: "can't", hint: "(nemogućnost)" },
+        { sentence: "She ___ ride a bike.", answer: "can", hint: "(sposobnost)" },
+        { sentence: "Fish ___ live in water.", answer: "can", hint: "(sposobnost)" },
+        { sentence: "A cat ___ sing.", answer: "can't", hint: "(nemogućnost)" },
+        { sentence: "We ___ jump.", answer: "can", hint: "(sposobnost)" },
+        { sentence: "A snake ___ walk.", answer: "can't", hint: "(nemogućnost)" },
+        { sentence: "He ___ climb a tree.", answer: "can", hint: "(sposobnost)" },
+      ]).slice(0, Math.min(count, 10));
+      return {
+        type: "fillin",
+        instruction: 'Popuni rečenicu sa "can" ili "can\'t".',
+        wordBank: ["can", "can't"],
+        items: pool,
+      };
+    },
+  },
+
+  g2_food_like: {
+    generate(count) {
+      const pool = shuffle([
+        { sentence: "I ___ pizza. 😊", answer: "like" },
+        { sentence: "I ___ fish. 😞", answer: "don't like" },
+        { sentence: "She ___ chocolate. 😊", answer: "likes" },
+        { sentence: "He ___ vegetables. 😞", answer: "doesn't like" },
+        { sentence: "We ___ ice cream. 😊", answer: "like" },
+        { sentence: "They ___ spinach. 😞", answer: "don't like" },
+        { sentence: "I ___ bananas. 😊", answer: "like" },
+        { sentence: "My brother ___ milk. 😞", answer: "doesn't like" },
+        { sentence: "You ___ cake. 😊", answer: "like" },
+        { sentence: "The children ___ soup. 😞", answer: "don't like" },
+      ]).slice(0, Math.min(count, 10));
+      return {
+        type: "fillin",
+        instruction: "Popuni rečenicu — koristi lice 😊 (like/likes) ili 😞 (don't like/doesn't like).",
+        wordBank: ["like", "likes", "don't like", "doesn't like"],
+        items: pool,
+      };
+    },
+  },
+
+  g2_free_time: {
+    generate(count) {
+      const all = [
+        { word: "reading", emoji: "📖", sr: "čitanje" }, { word: "drawing", emoji: "🎨", sr: "crtanje" },
+        { word: "playing football", emoji: "⚽", sr: "igranje fudbala" }, { word: "riding a bike", emoji: "🚲", sr: "vožnja bicikla" },
+        { word: "watching TV", emoji: "📺", sr: "gledanje TV-a" }, { word: "playing games", emoji: "🎮", sr: "igranje igrica" },
+        { word: "dancing", emoji: "💃", sr: "ples" }, { word: "singing", emoji: "🎤", sr: "pevanje" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 8));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže aktivnost na engleskom. Zaokruži odgovarajuću sličicu! 🎮",
+        teacherNote: "Izgovorite aktivnost 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  g2_seasons_weather: {
+    generate(count) {
+      const all = [
+        { word: "spring", emoji: "🌸", sr: "proleće" }, { word: "summer", emoji: "☀️", sr: "leto" },
+        { word: "autumn", emoji: "🍂", sr: "jesen" }, { word: "winter", emoji: "❄️", sr: "zima" },
+        { word: "foggy", emoji: "🌫️", sr: "maglovito" }, { word: "stormy", emoji: "⛈️", sr: "olujno" },
+        { word: "humid", emoji: "💦", sr: "vlažno" }, { word: "freezing", emoji: "🥶", sr: "ledeno" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 8));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže godišnje doba ili vreme na engleskom. Zaokruži odgovarajuću sličicu! ☀️",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu.",
+        items,
       };
     },
   },
