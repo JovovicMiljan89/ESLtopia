@@ -83,20 +83,20 @@ export const TOPICS = [
   { id: "g4_daily_routines", emoji: "⏰", name: "Daily routines", desc: "Dnevna rutina", grade: "4" },
   { id: "g4_time", emoji: "🕐", name: "Time", desc: "Vreme", grade: "4" },
   { id: "g4_present_simple", emoji: "🔄", name: "Present Simple", desc: "Mickey plays, Minnie reads…", grade: "4" },
-  { id: "g4_transport", emoji: "🚌", name: "Transport", desc: "Prevoz", grade: "4", comingSoon: true },
+  { id: "g4_transport", emoji: "🚌", name: "Transport", desc: "Prevoz", grade: "4" },
   { id: "sports", emoji: "⚽", name: "Sports", desc: "Sportovi — Mickey & Heroes", grade: "4" },
-  { id: "g4_seasons_weather_times", emoji: "☀️", name: "Seasons, weather and times of day", desc: "Godišnja doba, vreme i doba dana", grade: "4", comingSoon: true },
-  { id: "g4_question_words", emoji: "❓", name: "Question words (Who, What, Where, When, How)", desc: "Upitne reči", grade: "4", comingSoon: true },
-  { id: "g4_subject_object_pronouns", emoji: "👤", name: "Subject Pronouns and Object Pronouns", desc: "Lične i objekatske zamenice", grade: "4", comingSoon: true },
-  { id: "g4_prepositions_time", emoji: "🕐", name: "Prepositions of time (at, in, on)", desc: "Predlozi vremena", grade: "4", comingSoon: true },
-  { id: "g4_places_in_town", emoji: "🏙️", name: "Places in town", desc: "Mesta u gradu", grade: "4", comingSoon: true },
+  { id: "g4_seasons_weather_times", emoji: "☀️", name: "Seasons, weather and times of day", desc: "Godišnja doba, vreme i doba dana", grade: "4" },
+  { id: "g4_question_words", emoji: "❓", name: "Question words (Who, What, Where, When, How)", desc: "Upitne reči", grade: "4" },
+  { id: "g4_subject_object_pronouns", emoji: "👤", name: "Subject Pronouns and Object Pronouns", desc: "Lične i objekatske zamenice", grade: "4" },
+  { id: "g4_prepositions_time", emoji: "🕐", name: "Prepositions of time (at, in, on)", desc: "Predlozi vremena", grade: "4" },
+  { id: "g4_places_in_town", emoji: "🏙️", name: "Places in town", desc: "Mesta u gradu", grade: "4" },
   { id: "present_continuous", emoji: "🏃", name: "Present Continuous", desc: "Mickey is running — is/am/are + -ing", grade: "4" },
-  { id: "g4_clothes", emoji: "👕", name: "Clothes", desc: "Odeća", grade: "4", comingSoon: true },
-  { id: "g4_directions", emoji: "🧭", name: "Directions", desc: "Pravci — levo, desno, pravo", grade: "4", comingSoon: true },
-  { id: "g4_months_celebrations", emoji: "🎉", name: "Months and Celebrations", desc: "Meseci i praznici", grade: "4", comingSoon: true },
-  { id: "g4_adverbs_frequency", emoji: "🔁", name: "Adverbs of frequency", desc: "always, usually, sometimes…", grade: "4", comingSoon: true },
-  { id: "g4_ordinal_numbers", emoji: "🥇", name: "Ordinal numbers", desc: "first, second, third…", grade: "4", comingSoon: true },
-  { id: "g4_school_subjects", emoji: "📖", name: "School subjects", desc: "Školski predmeti", grade: "4", comingSoon: true },
+  { id: "g4_clothes", emoji: "👕", name: "Clothes", desc: "Odeća", grade: "4" },
+  { id: "g4_directions", emoji: "🧭", name: "Directions", desc: "Pravci — levo, desno, pravo", grade: "4" },
+  { id: "g4_months_celebrations", emoji: "🎉", name: "Months and Celebrations", desc: "Meseci i praznici", grade: "4" },
+  { id: "g4_adverbs_frequency", emoji: "🔁", name: "Adverbs of frequency", desc: "always, usually, sometimes…", grade: "4" },
+  { id: "g4_ordinal_numbers", emoji: "🥇", name: "Ordinal numbers", desc: "first, second, third…", grade: "4" },
+  { id: "g4_school_subjects", emoji: "📖", name: "School subjects", desc: "Školski predmeti", grade: "4" },
   // Bonus grade-4 content already built (not in the official list above, kept reachable):
   { id: "comparatives", emoji: "📊", name: "Comparatives", desc: "Poređenje prideva", grade: "4" },
   { id: "do_does", emoji: "❓", name: "Do / Does?", desc: "Pitanja u sadašnjem vremenu", grade: "4" },
@@ -236,6 +236,8 @@ const ODD_ONE_OUT_TOPIC_IDS = [
   "g2_feelings", "g2_family", "g2_body_face", "g2_five_senses", "g2_free_time", "g2_seasons_weather",
   "g3_food_meals", "g3_seasons_weather", "g3_my_day", "g3_jobs", "g3_after_school",
   "g4_family", "g4_home_furniture", "g4_can_cant_action", "g4_daily_routines", "g4_time",
+  "g4_transport", "g4_seasons_weather_times", "g4_places_in_town", "g4_directions",
+  "g4_months_celebrations", "g4_school_subjects",
 ];
 
 // count=50 is comfortably above every real vocab pool's size (all are ≤16),
@@ -1934,6 +1936,240 @@ export const TOPIC_DATA = {
         instruction: "Stavi glagol u odgovarajući oblik (Present Simple).",
         wordBank: pool.map(p => p.base),
         items: pool.map(p => ({ sentence: p.sentence, answer: p.answer, base: p.base })),
+      };
+    },
+  },
+
+  // ── Grade 4 curriculum additions (batch 4b) ─────────────────────────────
+  g4_transport: {
+    generate(count) {
+      const all = [
+        { word: "car", emoji: "🚗", sr: "auto" }, { word: "bus", emoji: "🚌", sr: "autobus" },
+        { word: "train", emoji: "🚂", sr: "voz" }, { word: "bicycle", emoji: "🚲", sr: "bicikl" },
+        { word: "plane", emoji: "✈️", sr: "avion" }, { word: "boat", emoji: "🚢", sr: "brod" },
+        { word: "motorbike", emoji: "🏍️", sr: "motor" }, { word: "taxi", emoji: "🚕", sr: "taksi" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 8));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže prevozno sredstvo na engleskom. Zaokruži odgovarajuću sličicu! 🚌",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  g4_seasons_weather_times: {
+    generate(count) {
+      const all = [
+        { word: "spring", emoji: "🌸", sr: "proleće" }, { word: "summer", emoji: "☀️", sr: "leto" },
+        { word: "autumn", emoji: "🍂", sr: "jesen" }, { word: "winter", emoji: "❄️", sr: "zima" },
+        { word: "morning", emoji: "🌅", sr: "jutro" }, { word: "afternoon", emoji: "🌤️", sr: "popodne" },
+        { word: "evening", emoji: "🌆", sr: "veče" }, { word: "night", emoji: "🌙", sr: "noć" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 8));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže godišnje doba ili doba dana na engleskom. Zaokruži odgovarajuću sličicu! ☀️",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  g4_question_words: {
+    generate(count) {
+      const pool = shuffle([
+        { sentence: "___ is your best friend?", answer: "Who" },
+        { sentence: "___ is your favourite colour?", answer: "What" },
+        { sentence: "___ do you live?", answer: "Where" },
+        { sentence: "___ is your birthday?", answer: "When" },
+        { sentence: "___ are you today?", answer: "How" },
+        { sentence: "___ is that boy?", answer: "Who" },
+        { sentence: "___ time is it?", answer: "What" },
+        { sentence: "___ is the nearest shop?", answer: "Where" },
+      ]).slice(0, Math.min(count, 8));
+      return {
+        type: "fillin",
+        instruction: "Popuni rečenicu odgovarajućom upitnom rečju (Who, What, Where, When, How).",
+        wordBank: ["Who", "What", "Where", "When", "How"],
+        items: pool,
+      };
+    },
+  },
+
+  g4_subject_object_pronouns: {
+    generate(count) {
+      const pool = shuffle([
+        { sentence: "I like her. She likes ___.", answer: "me" },
+        { sentence: "We see them. They see ___.", answer: "us" },
+        { sentence: "He helps me. I help ___.", answer: "him" },
+        { sentence: "You call her. She calls ___.", answer: "you" },
+        { sentence: "They know us. We know ___.", answer: "them" },
+        { sentence: "She loves him. He loves ___.", answer: "her" },
+      ]).slice(0, Math.min(count, 6));
+      return {
+        type: "fillin",
+        instruction: "Popuni rečenicu odgovarajućom objekatskom zamenicom (me/us/him/you/them/her).",
+        wordBank: ["me", "us", "him", "you", "them", "her"],
+        items: pool,
+      };
+    },
+  },
+
+  g4_prepositions_time: {
+    generate(count) {
+      const pool = shuffle([
+        { sentence: "My birthday is ___ June.", answer: "in" },
+        { sentence: "The party starts ___ 6 o'clock.", answer: "at" },
+        { sentence: "We go to school ___ Monday.", answer: "on" },
+        { sentence: "I was born ___ 2015.", answer: "in" },
+        { sentence: "We have lunch ___ noon.", answer: "at" },
+        { sentence: "School starts ___ September.", answer: "in" },
+        { sentence: "We don't have school ___ Sunday.", answer: "on" },
+        { sentence: "The film starts ___ 8 pm.", answer: "at" },
+      ]).slice(0, Math.min(count, 8));
+      return {
+        type: "fillin",
+        instruction: 'Popuni rečenicu sa "at", "in" ili "on".',
+        wordBank: ["at", "in", "on"],
+        items: pool,
+      };
+    },
+  },
+
+  g4_places_in_town: {
+    generate(count) {
+      const all = [
+        { word: "post office", emoji: "📮", sr: "pošta" }, { word: "supermarket", emoji: "🛒", sr: "supermarket" },
+        { word: "swimming pool", emoji: "🏊", sr: "bazen" }, { word: "playground", emoji: "🛝", sr: "igralište" },
+        { word: "petrol station", emoji: "⛽", sr: "benzinska pumpa" }, { word: "bakery", emoji: "🥖", sr: "pekara" },
+        { word: "pharmacy", emoji: "💊", sr: "apoteka" }, { word: "church", emoji: "⛪", sr: "crkva" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 8));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže mesto u gradu na engleskom. Zaokruži odgovarajuću sličicu! 🏙️",
+        teacherNote: "Izgovorite naziv mesta 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  g4_clothes: {
+    supportedTypes: ["match", "tf"],
+    generate(count, taskType) {
+      const pairs = shuffle([
+        { en: "pyjamas", sr: "pidžama" },
+        { en: "swimsuit", sr: "kupaći kostim" },
+        { en: "raincoat", sr: "kišni mantil" },
+        { en: "sweater", sr: "džemper" },
+        { en: "belt", sr: "kaiš" },
+        { en: "tie", sr: "kravata" },
+        { en: "sandals", sr: "sandale" },
+        { en: "sunglasses", sr: "naočare za sunce" },
+      ]).slice(0, Math.min(count, 8));
+      if (taskType === "tf") return makeTFFromPairs(pairs, count);
+      return {
+        type: "match",
+        instruction: "Povezi odevni predmet na engleskom sa prevodom.",
+        pairs,
+        leftLabel: "English",
+        rightLabel: "Srpski",
+      };
+    },
+  },
+
+  g4_directions: {
+    generate(count) {
+      const all = [
+        { word: "left", emoji: "⬅️", sr: "levo" }, { word: "right", emoji: "➡️", sr: "desno" },
+        { word: "straight ahead", emoji: "⬆️", sr: "pravo" }, { word: "turn", emoji: "🔄", sr: "skrenuti" },
+        { word: "stop", emoji: "🛑", sr: "stani" }, { word: "cross", emoji: "🚸", sr: "pređi (ulicu)" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 6));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže smer na engleskom. Zaokruži odgovarajuću sličicu! 🧭",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu i mogu pokazati smer rukom.",
+        items,
+      };
+    },
+  },
+
+  g4_months_celebrations: {
+    generate(count) {
+      const all = [
+        { word: "January", emoji: "🎊", sr: "januar" }, { word: "February", emoji: "💝", sr: "februar" },
+        { word: "March", emoji: "🌱", sr: "mart" }, { word: "April", emoji: "🌧️", sr: "april" },
+        { word: "May", emoji: "🌸", sr: "maj" }, { word: "June", emoji: "☀️", sr: "jun" },
+        { word: "July", emoji: "🏖️", sr: "jul" }, { word: "August", emoji: "🌻", sr: "avgust" },
+        { word: "September", emoji: "🍎", sr: "septembar" }, { word: "October", emoji: "🎃", sr: "oktobar" },
+        { word: "November", emoji: "🍂", sr: "novembar" }, { word: "December", emoji: "🎄", sr: "decembar" },
+        { word: "birthday", emoji: "🎂", sr: "rođendan" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 12));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže mesec ili praznik na engleskom. Zaokruži odgovarajuću sličicu! 🎉",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  g4_adverbs_frequency: {
+    generate(count) {
+      const pool = shuffle([
+        { sentence: "I ___ brush my teeth every morning. (100%)", answer: "always" },
+        { sentence: "She ___ eats meat. (0%)", answer: "never" },
+        { sentence: "We ___ go to school by bus. (90%)", answer: "usually" },
+        { sentence: "They ___ play chess on Sundays. (50%)", answer: "sometimes" },
+        { sentence: "He ___ reads before bed. (70%)", answer: "often" },
+        { sentence: "I ___ am late for school. (10%)", answer: "rarely" },
+      ]).slice(0, Math.min(count, 6));
+      return {
+        type: "fillin",
+        instruction: "Popuni rečenicu prilogom za učestalost (always/usually/often/sometimes/rarely/never).",
+        wordBank: ["always", "usually", "often", "sometimes", "rarely", "never"],
+        items: pool,
+      };
+    },
+  },
+
+  g4_ordinal_numbers: {
+    generate(count) {
+      const all = [
+        { word: "first", emoji: "🥇", sr: "prvi" }, { word: "second", emoji: "🥈", sr: "drugi" },
+        { word: "third", emoji: "🥉", sr: "treći" }, { word: "fourth", emoji: "4️⃣", sr: "četvrti" },
+        { word: "fifth", emoji: "5️⃣", sr: "peti" }, { word: "sixth", emoji: "6️⃣", sr: "šesti" },
+        { word: "seventh", emoji: "7️⃣", sr: "sedmi" }, { word: "eighth", emoji: "8️⃣", sr: "osmi" },
+        { word: "ninth", emoji: "9️⃣", sr: "deveti" }, { word: "tenth", emoji: "🔟", sr: "deseti" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 10));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže redni broj na engleskom. Zaokruži odgovarajući broj! 🥇",
+        teacherNote: "Izgovorite redni broj 2–3 puta. Deca zaokružuju odgovarajuću sličicu.",
+        items,
+      };
+    },
+  },
+
+  g4_school_subjects: {
+    generate(count) {
+      const all = [
+        { word: "math", emoji: "➗", sr: "matematika" }, { word: "English", emoji: "🇬🇧", sr: "engleski" },
+        { word: "science", emoji: "🔬", sr: "priroda i društvo" }, { word: "art", emoji: "🎨", sr: "likovno" },
+        { word: "music", emoji: "🎵", sr: "muzika" }, { word: "PE", emoji: "🤸", sr: "fizičko" },
+        { word: "history", emoji: "📜", sr: "istorija" }, { word: "geography", emoji: "🌍", sr: "geografija" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 8));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže školski predmet na engleskom. Zaokruži odgovarajuću sličicu! 📖",
+        teacherNote: "Izgovorite predmet 2–3 puta. Deca zaokružuju sličicu.",
+        items,
       };
     },
   },
