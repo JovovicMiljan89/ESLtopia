@@ -68,21 +68,21 @@ export const TOPICS = [
   // ── Grade 4 ──────────────────────────────────────────────────────────────
   { id: "am_is_are", emoji: "✏️", name: "Am/is/are", desc: "Mickey is happy — glagol to be", grade: "4" },
   { id: "plurals", emoji: "📚", name: "Plurals", desc: "Množina imenica", grade: "4" },
-  { id: "g4_pronouns_possessive", emoji: "👤", name: "Subject Pronouns and Possessive Adjectives", desc: "Lične zamenice i prisvojni pridevi", grade: "4", comingSoon: true },
-  { id: "g4_countries", emoji: "🌍", name: "Countries and Nationalities", desc: "Zemlje i nacionalnosti", grade: "4", comingSoon: true },
-  { id: "g4_this_that", emoji: "👉", name: "This/That/These/Those", desc: "Pokazne zamenice", grade: "4", comingSoon: true },
-  { id: "g4_appearance_adjectives", emoji: "📏", name: "Appearance adjectives", desc: "Pridevi za izgled", grade: "4", comingSoon: true },
+  { id: "g4_pronouns_possessive", emoji: "👤", name: "Subject Pronouns and Possessive Adjectives", desc: "Lične zamenice i prisvojni pridevi", grade: "4" },
+  { id: "g4_countries", emoji: "🌍", name: "Countries and Nationalities", desc: "Zemlje i nacionalnosti", grade: "4" },
+  { id: "g4_this_that", emoji: "👉", name: "This/That/These/Those", desc: "Pokazne zamenice", grade: "4" },
+  { id: "g4_appearance_adjectives", emoji: "📏", name: "Appearance adjectives", desc: "Pridevi za izgled", grade: "4" },
   { id: "have_has", emoji: "🤲", name: "Have got/Haven't got", desc: "Glagol have i has", grade: "4" },
-  { id: "g4_family", emoji: "👨‍👩‍👧", name: "Family", desc: "Porodica", grade: "4", comingSoon: true },
-  { id: "g4_home_furniture", emoji: "🏠", name: "Home and furniture", desc: "Dom i nameštaj", grade: "4", comingSoon: true },
-  { id: "g4_there_is_are", emoji: "📍", name: "There is/There are", desc: "There is / There are", grade: "4", comingSoon: true },
-  { id: "g4_prepositions_place", emoji: "📦", name: "Prepositions of place", desc: "Predlozi mesta", grade: "4", comingSoon: true },
+  { id: "g4_family", emoji: "👨‍👩‍👧", name: "Family", desc: "Porodica", grade: "4" },
+  { id: "g4_home_furniture", emoji: "🏠", name: "Home and furniture", desc: "Dom i nameštaj", grade: "4" },
+  { id: "g4_there_is_are", emoji: "📍", name: "There is/There are", desc: "There is / There are", grade: "4" },
+  { id: "g4_prepositions_place", emoji: "📦", name: "Prepositions of place", desc: "Predlozi mesta", grade: "4" },
   { id: "animals", emoji: "🐾", name: "Animals", desc: "Pluto, Simba, Nemo i drugi", grade: "4" },
-  { id: "g4_can_cant_action", emoji: "💪", name: "Can & Can't + Action verbs", desc: "Can & Can't — glagoli radnje", grade: "4", comingSoon: true },
+  { id: "g4_can_cant_action", emoji: "💪", name: "Can & Can't + Action verbs", desc: "Can & Can't — glagoli radnje", grade: "4" },
   { id: "body", emoji: "🧍", name: "Body parts", desc: "Delovi tela — Mickey & friends", grade: "4" },
-  { id: "g4_daily_routines", emoji: "⏰", name: "Daily routines", desc: "Dnevna rutina", grade: "4", comingSoon: true },
-  { id: "g4_time", emoji: "🕐", name: "Time", desc: "Vreme", grade: "4", comingSoon: true },
-  { id: "g4_present_simple", emoji: "🔄", name: "Present Simple", desc: "Mickey plays, Minnie reads…", grade: "4", comingSoon: true },
+  { id: "g4_daily_routines", emoji: "⏰", name: "Daily routines", desc: "Dnevna rutina", grade: "4" },
+  { id: "g4_time", emoji: "🕐", name: "Time", desc: "Vreme", grade: "4" },
+  { id: "g4_present_simple", emoji: "🔄", name: "Present Simple", desc: "Mickey plays, Minnie reads…", grade: "4" },
   { id: "g4_transport", emoji: "🚌", name: "Transport", desc: "Prevoz", grade: "4", comingSoon: true },
   { id: "sports", emoji: "⚽", name: "Sports", desc: "Sportovi — Mickey & Heroes", grade: "4" },
   { id: "g4_seasons_weather_times", emoji: "☀️", name: "Seasons, weather and times of day", desc: "Godišnja doba, vreme i doba dana", grade: "4", comingSoon: true },
@@ -235,6 +235,7 @@ const ODD_ONE_OUT_TOPIC_IDS = [
   "g1_nature", "g1_animals_activities",
   "g2_feelings", "g2_family", "g2_body_face", "g2_five_senses", "g2_free_time", "g2_seasons_weather",
   "g3_food_meals", "g3_seasons_weather", "g3_my_day", "g3_jobs", "g3_after_school",
+  "g4_family", "g4_home_furniture", "g4_can_cant_action", "g4_daily_routines", "g4_time",
 ];
 
 // count=50 is comfortably above every real vocab pool's size (all are ≤16),
@@ -1701,6 +1702,238 @@ export const TOPIC_DATA = {
         instruction: "Stavi glagol u Present Continuous (am/is/are + -ing). ⭐ Šta Mickey i prijatelji rade upravo sada?",
         wordBank: ["am", "is", "are"],
         items: pool,
+      };
+    },
+  },
+
+  // ── Grade 4 curriculum additions (batch 4a) ─────────────────────────────
+  g4_pronouns_possessive: {
+    generate(count) {
+      const pool = shuffle([
+        { sentence: "I have a dog. ___ dog is brown.", answer: "My" },
+        { sentence: "You have a book. ___ book is blue.", answer: "Your" },
+        { sentence: "She has a cat. ___ cat is black.", answer: "Her" },
+        { sentence: "He has a bike. ___ bike is red.", answer: "His" },
+        { sentence: "We have a house. ___ house is big.", answer: "Our" },
+        { sentence: "They have toys. ___ toys are new.", answer: "Their" },
+        { sentence: "It has a tail. ___ tail is long.", answer: "Its" },
+      ]).slice(0, Math.min(count, 7));
+      return {
+        type: "fillin",
+        instruction: "Popuni rečenicu odgovarajućim prisvojnim pridevom (my/your/her/his/our/their/its).",
+        wordBank: ["My", "Your", "Her", "His", "Our", "Their", "Its"],
+        items: pool,
+      };
+    },
+  },
+
+  g4_countries: {
+    supportedTypes: ["match", "tf"],
+    generate(count, taskType) {
+      const pairs = shuffle([
+        { en: "England", sr: "English" },
+        { en: "France", sr: "French" },
+        { en: "Italy", sr: "Italian" },
+        { en: "Germany", sr: "German" },
+        { en: "Spain", sr: "Spanish" },
+        { en: "Serbia", sr: "Serbian" },
+        { en: "America", sr: "American" },
+        { en: "Japan", sr: "Japanese" },
+        { en: "China", sr: "Chinese" },
+        { en: "Russia", sr: "Russian" },
+      ]).slice(0, Math.min(count, 10));
+      if (taskType === "tf") return makeTFFromPairs(pairs, count);
+      return {
+        type: "match",
+        instruction: "Povezi zemlju sa odgovarajućom nacionalnošću.",
+        pairs,
+        leftLabel: "Country",
+        rightLabel: "Nationality",
+      };
+    },
+  },
+
+  g4_this_that: {
+    generate(count) {
+      const pool = shuffle([
+        { sentence: "___ is my sister. (here)", answer: "This" },
+        { sentence: "___ is my uncle. (there)", answer: "That" },
+        { sentence: "___ are my cousins. (here)", answer: "These" },
+        { sentence: "___ are your friends. (there)", answer: "Those" },
+        { sentence: "Is ___ your bag? (here)", answer: "this" },
+        { sentence: "Are ___ your shoes? (there)", answer: "those" },
+      ]).slice(0, Math.min(count, 6));
+      return {
+        type: "fillin",
+        instruction: 'Popuni rečenicu sa "this", "that", "these" ili "those".',
+        wordBank: ["This", "That", "These", "Those"],
+        items: pool,
+      };
+    },
+  },
+
+  g4_appearance_adjectives: {
+    supportedTypes: ["match", "tf"],
+    generate(count, taskType) {
+      const pairs = shuffle([
+        { en: "tall", sr: "short" },
+        { en: "fat", sr: "thin" },
+        { en: "beautiful", sr: "ugly" },
+        { en: "strong", sr: "weak" },
+        { en: "young", sr: "old" },
+        { en: "curly", sr: "straight" },
+      ]).slice(0, Math.min(count, 6));
+      if (taskType === "tf") return makeTFFromPairs(pairs, count);
+      return {
+        type: "match",
+        instruction: "Povezi pridev za izgled sa suprotnim pojmom.",
+        pairs,
+        leftLabel: "Pridev",
+        rightLabel: "Suprotan pojam",
+      };
+    },
+  },
+
+  g4_family: {
+    generate(count) {
+      const all = [
+        { word: "son", emoji: "👦", sr: "sin" }, { word: "daughter", emoji: "👧", sr: "ćerka" },
+        { word: "husband", emoji: "🤵", sr: "muž" }, { word: "wife", emoji: "👰", sr: "žena" },
+        { word: "siblings", emoji: "👫", sr: "braća i sestre" }, { word: "relatives", emoji: "👪", sr: "rodbina" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 6));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže člana porodice na engleskom. Zaokruži odgovarajuću sličicu! 👨‍👩‍👧",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  g4_home_furniture: {
+    generate(count) {
+      const all = [
+        { word: "sofa", emoji: "🛋️", sr: "sofa" }, { word: "bed", emoji: "🛏️", sr: "krevet" },
+        { word: "table", emoji: "🪑", sr: "sto" }, { word: "chair", emoji: "🪑", sr: "stolica" },
+        { word: "TV", emoji: "📺", sr: "televizor" }, { word: "lamp", emoji: "💡", sr: "lampa" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 6));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže deo nameštaja na engleskom. Zaokruži odgovarajuću sličicu! 🏠",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  g4_there_is_are: {
+    generate(count) {
+      const pool = shuffle([
+        { sentence: "___ a big tree in the garden.", answer: "There is" },
+        { sentence: "___ four chairs in the kitchen.", answer: "There are" },
+        { sentence: "___ a river near our town.", answer: "There is" },
+        { sentence: "___ many shops in the city.", answer: "There are" },
+        { sentence: "___ a swimming pool at school.", answer: "There is" },
+        { sentence: "___ two windows in my room.", answer: "There are" },
+      ]).slice(0, Math.min(count, 6));
+      return {
+        type: "fillin",
+        instruction: 'Popuni rečenicu sa "There is" ili "There are".',
+        wordBank: ["There is", "There are"],
+        items: pool,
+      };
+    },
+  },
+
+  g4_prepositions_place: {
+    generate(count) {
+      const pool = shuffle([
+        { sentence: "The cat is ___ the two chairs.", answer: "between", hint: "(između)" },
+        { sentence: "The car is ___ the house.", answer: "in front of", hint: "(ispred)" },
+        { sentence: "The school is ___ the park.", answer: "near", hint: "(blizu)" },
+        { sentence: "The lamp is ___ the table.", answer: "above", hint: "(iznad)" },
+        { sentence: "The shoes are ___ the bed.", answer: "below", hint: "(ispod)" },
+        { sentence: "The bank is ___ the two shops.", answer: "between", hint: "(između)" },
+      ]).slice(0, Math.min(count, 6));
+      return {
+        type: "fillin",
+        instruction: "Popuni rečenicu predlogom mesta (between, in front of, near, above, below).",
+        wordBank: ["between", "in front of", "near", "above", "below"],
+        items: pool,
+      };
+    },
+  },
+
+  g4_can_cant_action: {
+    generate(count) {
+      const all = [
+        { word: "jump", emoji: "🤸", sr: "skače" }, { word: "run", emoji: "🏃", sr: "trči" },
+        { word: "swim", emoji: "🏊", sr: "pliva" }, { word: "climb", emoji: "🧗", sr: "penje se" },
+        { word: "dance", emoji: "💃", sr: "pleše" }, { word: "sing", emoji: "🎤", sr: "peva" },
+        { word: "cook", emoji: "🍳", sr: "kuva" }, { word: "paint", emoji: "🎨", sr: "slika" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 8));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže radnju na engleskom (Can you...?). Zaokruži odgovarajuću sličicu! 💪",
+        teacherNote: "Izgovorite glagol 2–3 puta. Deca zaokružuju sličicu i mogu pitati 'Can you...?'.",
+        items,
+      };
+    },
+  },
+
+  g4_daily_routines: {
+    generate(count) {
+      const all = [
+        { word: "get up", emoji: "⏰", sr: "ustaje" }, { word: "take a shower", emoji: "🚿", sr: "tušira se" },
+        { word: "get dressed", emoji: "👕", sr: "oblači se" }, { word: "eat lunch", emoji: "🍱", sr: "ruča" },
+        { word: "do homework", emoji: "📝", sr: "radi domaći" }, { word: "watch TV", emoji: "📺", sr: "gleda TV" },
+        { word: "go to sleep", emoji: "🛌", sr: "ide na spavanje" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 7));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže deo dnevne rutine na engleskom. Zaokruži odgovarajuću sličicu! ⏰",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  g4_time: {
+    generate(count) {
+      const all = [
+        { word: "hour", emoji: "🕐", sr: "sat" }, { word: "minute", emoji: "⏱️", sr: "minut" },
+        { word: "second", emoji: "⏲️", sr: "sekund" }, { word: "early", emoji: "🌅", sr: "rano" },
+        { word: "late", emoji: "🌆", sr: "kasno" }, { word: "on time", emoji: "✅", sr: "na vreme" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 6));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže reč vezanu za vreme na engleskom. Zaokruži odgovarajuću sličicu! 🕐",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  g4_present_simple: {
+    generate(count) {
+      const pool = shuffle([
+        { sentence: "I ___ (go) to school every day.", answer: "go", base: "go" },
+        { sentence: "We ___ (play) football on weekends.", answer: "play", base: "play" },
+        { sentence: "They ___ (watch) cartoons in the evening.", answer: "watch", base: "watch" },
+        { sentence: "You ___ (read) books at night.", answer: "read", base: "read" },
+        { sentence: "I ___ (like) pizza.", answer: "like", base: "like" },
+        { sentence: "We ___ (live) in a big city.", answer: "live", base: "live" },
+      ]).slice(0, Math.min(count, 6));
+      return {
+        type: "fillin",
+        instruction: "Stavi glagol u odgovarajući oblik (Present Simple).",
+        wordBank: pool.map(p => p.base),
+        items: pool.map(p => ({ sentence: p.sentence, answer: p.answer, base: p.base })),
       };
     },
   },
