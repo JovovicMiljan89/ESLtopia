@@ -257,6 +257,7 @@ function getFullWordPool(topicId) {
 function buildOddOneOut(topicId, groupCount) {
   if (!ODD_ONE_OUT_TOPIC_IDS.includes(topicId)) return null;
   const ownPool = shuffle(getFullWordPool(topicId));
+  const ownWords = new Set(ownPool.map(w => w.word.toLowerCase()));
   const otherIds = ODD_ONE_OUT_TOPIC_IDS.filter(id => id !== topicId);
   if (ownPool.length < 3 || otherIds.length === 0) return null;
 
@@ -265,9 +266,16 @@ function buildOddOneOut(topicId, groupCount) {
   for (let i = 0; i < numGroups; i++) {
     const belongs = ownPool.slice(i * 3, i * 3 + 3);
     if (belongs.length < 3) break;
-    const intruderPool = getFullWordPool(shuffle(otherIds)[0]);
-    if (intruderPool.length === 0) continue;
-    const intruder = shuffle(intruderPool)[0];
+    // Several topics share vocabulary across grades (e.g. "spring" is in
+    // every seasons topic) -- an intruder pulled from a word that's also in
+    // this topic's own pool would be indistinguishable from a correct
+    // answer, so candidates are pooled across every other topic and any
+    // word already in ownPool is filtered out before picking.
+    const candidates = otherIds
+      .flatMap(id => getFullWordPool(id))
+      .filter(w => !ownWords.has(w.word.toLowerCase()));
+    if (candidates.length === 0) continue;
+    const intruder = shuffle(candidates)[0];
     const words = shuffle([
       ...belongs.map(w => ({ word: w.word, emoji: w.emoji, isIntruder: false })),
       { word: intruder.word, emoji: intruder.emoji, isIntruder: true },
