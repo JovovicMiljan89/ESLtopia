@@ -13,19 +13,19 @@ import emojiIconManifest from './emojiIconManifest.json';
 // full plan is transparent) but not selectable until built.
 export const TOPICS = [
   // ── Grade 1 ──────────────────────────────────────────────────────────────
-  { id: "g1_numbers", emoji: "🔢", name: "Numbers 1-10", desc: "Brojevi 1–10", grade: "1", comingSoon: true },
+  { id: "g1_numbers", emoji: "🔢", name: "Numbers 1-10", desc: "Brojevi 1–10", grade: "1" },
   { id: "colors", emoji: "🎨", name: "Colours", desc: "Boje — Mickey, Minnie, Donald…", grade: "1" },
   { id: "family", emoji: "👨‍👩‍👧", name: "Family", desc: "Porodica — Stars & Heroes", grade: "1" },
   { id: "classroom", emoji: "🏫", name: "My school", desc: "Učionica — Stars & Heroes", grade: "1" },
-  { id: "g1_my_room", emoji: "🛏️", name: "My room", desc: "Moja soba", grade: "1", comingSoon: true },
-  { id: "g1_shapes", emoji: "🔺", name: "Shapes", desc: "Oblici", grade: "1", comingSoon: true },
-  { id: "g1_feelings", emoji: "😊", name: "Feelings", desc: "Osećanja — happy, sad, grumpy, nervous, brave", grade: "1", comingSoon: true },
-  { id: "g1_my_body", emoji: "🧍", name: "My body", desc: "Moje telo", grade: "1", comingSoon: true },
-  { id: "g1_clothes", emoji: "👕", name: "Clothes", desc: "Odeća", grade: "1", comingSoon: true },
+  { id: "g1_my_room", emoji: "🛏️", name: "My room", desc: "Moja soba", grade: "1" },
+  { id: "g1_shapes", emoji: "🔺", name: "Shapes", desc: "Oblici", grade: "1" },
+  { id: "g1_feelings", emoji: "😊", name: "Feelings", desc: "Osećanja — happy, sad, grumpy, nervous, brave", grade: "1" },
+  { id: "g1_my_body", emoji: "🧍", name: "My body", desc: "Moje telo", grade: "1" },
+  { id: "g1_clothes", emoji: "👕", name: "Clothes", desc: "Odeća", grade: "1" },
   { id: "seasons_weather", emoji: "☀️", name: "Seasons and the weather", desc: "Godišnja doba i vreme", grade: "1" },
-  { id: "g1_nature", emoji: "🌳", name: "Nature", desc: "Priroda", grade: "1", comingSoon: true },
+  { id: "g1_nature", emoji: "🌳", name: "Nature", desc: "Priroda", grade: "1" },
   { id: "food", emoji: "🍎", name: "Food", desc: "Hrana — Stars & Heroes", grade: "1" },
-  { id: "g1_animals_activities", emoji: "🐾", name: "Animals and activities", desc: "Životinje i pokreti — kako se životinje kreću", grade: "1", comingSoon: true },
+  { id: "g1_animals_activities", emoji: "🐾", name: "Animals and activities", desc: "Životinje i pokreti — kako se životinje kreću", grade: "1" },
   { id: "alphabet", emoji: "🔤", name: "Alphabet", desc: "Slova — Stars & Heroes", grade: "1" },
 
   // ── Grade 2 ──────────────────────────────────────────────────────────────
@@ -231,6 +231,8 @@ function conjugate3rdPerson(base) {
 const ODD_ONE_OUT_TOPIC_IDS = [
   "animals", "family", "body", "food", "classroom",
   "toys", "my_home", "seasons_weather", "places_in_town", "sea_world", "at_school",
+  "g1_my_room", "g1_shapes", "g1_feelings", "g1_my_body", "g1_clothes",
+  "g1_nature", "g1_animals_activities",
 ];
 
 // count=50 is comfortably above every real vocab pool's size (all are ≤16),
@@ -484,6 +486,154 @@ export function generateFlashcards(topicId, count) {
 }
 
 export const TOPIC_DATA = {
+  // ── Grade 1 curriculum additions (batch 1) ──────────────────────────────
+  g1_numbers: {
+    generate(count) {
+      const all = [
+        { word: "one", emoji: "1️⃣", sr: "jedan" }, { word: "two", emoji: "2️⃣", sr: "dva" },
+        { word: "three", emoji: "3️⃣", sr: "tri" }, { word: "four", emoji: "4️⃣", sr: "četiri" },
+        { word: "five", emoji: "5️⃣", sr: "pet" }, { word: "six", emoji: "6️⃣", sr: "šest" },
+        { word: "seven", emoji: "7️⃣", sr: "sedam" }, { word: "eight", emoji: "8️⃣", sr: "osam" },
+        { word: "nine", emoji: "9️⃣", sr: "devet" }, { word: "ten", emoji: "🔟", sr: "deset" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 10));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže broj na engleskom. Zaokruži odgovarajući broj! 🔢",
+        teacherNote: "Izgovorite broj na engleskom 2–3 puta. Deca zaokružuju cifru/kartu.",
+        items,
+      };
+    },
+  },
+
+  g1_my_room: {
+    generate(count) {
+      const all = [
+        { word: "bed", emoji: "🛏️", sr: "krevet" }, { word: "window", emoji: "🪟", sr: "prozor" },
+        { word: "door", emoji: "🚪", sr: "vrata" }, { word: "lamp", emoji: "💡", sr: "lampa" },
+        { word: "mirror", emoji: "🪞", sr: "ogledalo" }, { word: "alarm clock", emoji: "⏰", sr: "budilnik" },
+        { word: "poster", emoji: "🖼️", sr: "poster" }, { word: "teddy bear", emoji: "🧸", sr: "medvedić" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 8));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže predmet iz sobe na engleskom. Zaokruži odgovarajuću sličicu! 🛏️",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  g1_shapes: {
+    generate(count) {
+      const all = [
+        { word: "circle", emoji: "🔵", sr: "krug" }, { word: "square", emoji: "🟦", sr: "kvadrat" },
+        { word: "triangle", emoji: "🔺", sr: "trougao" }, { word: "rectangle", emoji: "▬", sr: "pravougaonik" },
+        { word: "star", emoji: "⭐", sr: "zvezda" }, { word: "heart", emoji: "❤️", sr: "srce" },
+        { word: "diamond", emoji: "🔶", sr: "romb" }, { word: "oval", emoji: "🥚", sr: "oval" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 8));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže oblik na engleskom. Zaokruži odgovarajući oblik! 🔺",
+        teacherNote: "Izgovorite naziv oblika 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  g1_feelings: {
+    generate(count) {
+      const all = [
+        { word: "happy", emoji: "😊", sr: "srećan" }, { word: "sad", emoji: "😢", sr: "tužan" },
+        { word: "grumpy", emoji: "😠", sr: "namrgođen" }, { word: "nervous", emoji: "😰", sr: "nervozan" },
+        { word: "brave", emoji: "💪", sr: "hrabar" }, { word: "excited", emoji: "🤩", sr: "uzbuđen" },
+        { word: "scared", emoji: "😨", sr: "uplašen" }, { word: "tired", emoji: "😴", sr: "umoran" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 8));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže osećanje na engleskom. Zaokruži odgovarajuću sličicu! 😊",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu i mogu oponašati izraz lica.",
+        items,
+      };
+    },
+  },
+
+  g1_my_body: {
+    generate(count) {
+      const all = [
+        { word: "head", emoji: "🗣️", sr: "glava" }, { word: "eye", emoji: "👁️", sr: "oko" },
+        { word: "nose", emoji: "👃", sr: "nos" }, { word: "mouth", emoji: "👄", sr: "usta" },
+        { word: "ear", emoji: "👂", sr: "uho" }, { word: "hand", emoji: "✋", sr: "ruka" },
+        { word: "foot", emoji: "🦶", sr: "stopalo" }, { word: "arm", emoji: "💪", sr: "ruka (nadlaktica)" },
+        { word: "leg", emoji: "🦵", sr: "noga" }, { word: "hair", emoji: "💇", sr: "kosa" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 10));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže deo tela na engleskom. Zaokruži odgovarajuću sličicu! 🧍",
+        teacherNote: "Izgovorite deo tela 2–3 puta. Deca zaokružuju sličicu i mogu pokazati na sebi.",
+        items,
+      };
+    },
+  },
+
+  g1_clothes: {
+    generate(count) {
+      const all = [
+        { word: "t-shirt", emoji: "👕", sr: "majica" }, { word: "trousers", emoji: "👖", sr: "pantalone" },
+        { word: "dress", emoji: "👗", sr: "haljina" }, { word: "shoes", emoji: "👟", sr: "patike" },
+        { word: "hat", emoji: "🧢", sr: "kapa" }, { word: "socks", emoji: "🧦", sr: "čarape" },
+        { word: "jacket", emoji: "🧥", sr: "jakna" }, { word: "scarf", emoji: "🧣", sr: "šal" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 8));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže odevni predmet na engleskom. Zaokruži odgovarajuću sličicu! 👕",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  g1_nature: {
+    generate(count) {
+      const all = [
+        { word: "tree", emoji: "🌳", sr: "drvo" }, { word: "flower", emoji: "🌸", sr: "cvet" },
+        { word: "sun", emoji: "☀️", sr: "sunce" }, { word: "moon", emoji: "🌙", sr: "mesec" },
+        { word: "star", emoji: "⭐", sr: "zvezda" }, { word: "mountain", emoji: "⛰️", sr: "planina" },
+        { word: "forest", emoji: "🌲", sr: "šuma" }, { word: "grass", emoji: "🌱", sr: "trava" },
+        { word: "cloud", emoji: "☁️", sr: "oblak" }, { word: "rain", emoji: "🌧️", sr: "kiša" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 10));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže reč iz prirode na engleskom. Zaokruži odgovarajuću sličicu! 🌳",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu.",
+        items,
+      };
+    },
+  },
+
+  g1_animals_activities: {
+    generate(count) {
+      const all = [
+        { word: "fly", emoji: "🦅", sr: "leti" }, { word: "swim", emoji: "🐟", sr: "pliva" },
+        { word: "run", emoji: "🐎", sr: "trči" }, { word: "jump", emoji: "🐰", sr: "skače" },
+        { word: "crawl", emoji: "🐍", sr: "puzi" }, { word: "walk", emoji: "🐢", sr: "hoda" },
+        { word: "hop", emoji: "🐸", sr: "poskakuje" }, { word: "climb", emoji: "🐒", sr: "penje se" },
+      ];
+      const items = shuffle(all).slice(0, Math.min(count, 8));
+      return {
+        type: "listen-circle",
+        instruction: "Nastavnik kaže kako se životinja kreće na engleskom. Zaokruži odgovarajuću sličicu! 🐾",
+        teacherNote: "Izgovorite reč 2–3 puta. Deca zaokružuju sličicu i mogu oponašati pokret.",
+        items,
+      };
+    },
+  },
+
   colors: {
     generate(count) {
       const all = [
