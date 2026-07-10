@@ -2611,6 +2611,31 @@ export const styles = `
   .flashcard-outline .flashcard-word { color: #2d1b0e; }
   .flashcard-outline .flashcard-translation { color: #b0a89f; }
 
+  /* Photo / blurred / dotted sets — plain card so the image's own colors
+     read clearly, no competing pastel background. */
+  .flashcard-imagecard { background: #fff; border: 2px solid #eee2da; }
+
+  .flashcard-image {
+    width: 100%;
+    max-width: 120px;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    margin-bottom: 8px;
+    border-radius: 10px;
+  }
+
+  .flashcard-image-loading {
+    width: 100%;
+    max-width: 120px;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 8px;
+    opacity: 0.5;
+  }
+
   @media (max-width: 860px) {
     .flashcard-page { width: 100%; padding: 20px 14px; }
     .flashcard-grid { grid-template-columns: repeat(2, 1fr); }
@@ -2622,6 +2647,7 @@ export const styles = `
     .flashcard-emoji { font-size: 34px; }
     .flashcard-emoji-outline { width: 44px; height: 44px; }
     .flashcard-emoji-outline .emoji-layer { font-size: 34px; }
+    .flashcard-image, .flashcard-image-loading { max-width: 90px; }
     .flashcard-word { font-size: 14px; }
   }
 
