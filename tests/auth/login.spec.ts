@@ -5,7 +5,7 @@
 //
 // A confirmed fixture user is created up front via the admin API (service
 // role), so these tests don't depend on the email-confirmation flow.
-// Users are cleaned up by the global teardown (all @example.test users).
+// Users are cleaned up by the global teardown (all @yopmail.com users).
 
 import { test, expect, type Page } from '@playwright/test';
 import { createConfirmedUser, postAuthToken, uniqueEmail } from '../helpers/cleanup';

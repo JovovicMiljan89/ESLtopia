@@ -10,7 +10,7 @@ Write a new Playwright E2E spec for the english-app project based on the user's 
 
 - **Stack**: React + Vite frontend, Supabase auth + Postgres backend, Edge Functions (Deno), deployed to Vercel at `https://esltopia.vercel.app`
 - **Test runner**: Playwright `@playwright/test` — TypeScript, `tests/` directory
-- **Config**: `playwright.config.ts` — tests run against `https://esltopia.vercel.app` (or `$BASE_URL`), Chromium only, `fullyParallel: true`, global teardown purges `@example.test` users
+- **Config**: `playwright.config.ts` — tests run against `https://esltopia.vercel.app` (or `$BASE_URL`), Chromium only, `fullyParallel: true`, global teardown purges `@yopmail.com` users
 - **Shared helpers**:
   - `tests/helpers/cleanup.ts` — `createConfirmedUser`, `getProfile`, `confirmUser`, `setProfileStatus`, `setProfileRole`, `setProfileSchoolId`, `getAccessToken`, `generateRecoveryLink`, `deleteTestUsers`, `uniqueEmail`
   - `tests/helpers/ui.ts` — `loginToApp(page, email, password)` (logs in and clicks "Get started")
@@ -18,7 +18,7 @@ Write a new Playwright E2E spec for the english-app project based on the user's 
 
 ## Rules for new tests
 
-1. **Always use `uniqueEmail(prefix)` from cleanup** for every test address — never hard-code email strings. All addresses must end with `@example.test` so the global teardown purges them.
+1. **Always use `uniqueEmail(prefix)` from cleanup** for every test address — never hard-code email strings. All addresses must end with `@yopmail.com` so the global teardown purges them.
 2. **Create fixture users with `createConfirmedUser`** in `test.beforeAll` — never go through the UI signup flow to set up a fixture.
 3. **Use `loginToApp(page, email, password)` from `../helpers/ui`** whenever you need a fully-authenticated session in the app shell. Only write the login form manually when the test is specifically about the login form.
 4. **One `test.describe` per logical feature area.** Tests within a describe share a `beforeAll` for fixture setup.

@@ -1,6 +1,6 @@
 // tests/global-teardown.ts
 //
-// Runs once after the entire test run completes. Purges all @example.test
+// Runs once after the entire test run completes. Purges all @yopmail.com
 // users created by any spec. Centralizing cleanup here (instead of a per-spec
 // afterAll) avoids races where one spec's purge-all deletes a fixture user
 // another spec is still using under parallel execution.
