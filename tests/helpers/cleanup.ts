@@ -11,14 +11,7 @@ const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? '';
 const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY ?? '';
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
 
-// yopmail.com accepts mail for any address with no signup, so GoTrue's
-// synchronous signup-confirmation send always succeeds instead of bouncing
-// (the old @example.test, an IANA-reserved non-routable TLD, always NDR'd
-// back to whichever inbox relays Supabase's auth email, e.g. the daily
-// registration-report account). Tests never read the mailbox -- confirmation
-// is done via the admin API (see confirmUser) -- so deliverability is the
-// only property that matters here.
-const TEST_EMAIL_DOMAIN = '@yopmail.com';
+const TEST_EMAIL_DOMAIN = '@example.test';
 
 let admin: SupabaseClient | null = null;
 function adminClient(): SupabaseClient | null {
@@ -31,7 +24,7 @@ function adminClient(): SupabaseClient | null {
   return admin;
 }
 
-/** Generate a unique test email. All test addresses use @yopmail.com so teardown can purge them. */
+/** Generate a unique test email. All test addresses use @example.test so teardown can purge them. */
 export function uniqueEmail(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}${TEST_EMAIL_DOMAIN}`;
 }
@@ -224,8 +217,7 @@ export async function generateRecoveryLink(email: string, redirectTo: string): P
 
 /**
  * Delete every user whose email ends with the test domain.
- * Safe in production: an @yopmail.com signup for a real teacher/school
- * account is effectively unheard of, so this won't catch real users.
+ * Safe in production: real users never use the `.test` TLD.
  *
  * NOTE: purges ALL test users — if the suite grows to run multiple auth tests
  * in parallel across runs, switch to deleting only addresses from the current

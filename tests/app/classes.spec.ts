@@ -9,7 +9,7 @@
 //   records  — "Users manage own records":  owner_id = auth.uid() OR superadmin
 //
 // Cascade: deleting a class also deletes its record (ON DELETE CASCADE on class_id).
-// Cleanup:  test users use @yopmail.com — global teardown purges them, which
+// Cleanup:  test users use @example.test — global teardown purges them, which
 //           cascade-deletes all their classes and records automatically.
 
 import { test, expect } from '@playwright/test';

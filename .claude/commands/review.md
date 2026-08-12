@@ -14,7 +14,7 @@ Perform a thorough code review of the english-app project. Review **$ARGUMENTS**
 - **Fixture setup**: fixture users must be created with `createConfirmedUser` in `beforeAll`, not via the signup UI.
 - **Helper reuse**: `loginToApp` from `helpers/ui` must be used instead of copy-pasted login flows.
 - **Assertions**: every `click()` on a button that triggers async work should be followed by an `expect(...).toBeVisible({ timeout })`.
-- **Teardown**: all test addresses must end with `@yopmail.com` so the global teardown purges them.
+- **Teardown**: all test addresses must end with `@example.test` so the global teardown purges them.
 - **Dead code**: any local helper that duplicates something in `helpers/cleanup.ts` or `helpers/ui.ts`.
 - **Type safety**: all function parameters should have TypeScript types; avoid `any`.
 

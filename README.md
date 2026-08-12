@@ -95,7 +95,7 @@ SUPABASE_SERVICE_ROLE_KEY=   # needed to create/delete test users
 
 `BASE_URL` defaults to `https://esltopia.vercel.app` — override to target a preview or local build.
 
-Test users are created under the `@yopmail.com` domain and purged automatically after each run.
+Test users are created under the `@example.test` domain and purged automatically after each run.
 
 ### Feature-flagged tests
 
