@@ -1,6 +1,6 @@
 name: Update Visual Regression Baselines
 
-# Manual-only: regenerates tests/visual/*-snapshots/ on the same ubuntu-latest
+# Manual-only: regenerates tests/visual/*-snapshots/ on the same ubuntu-24.04
 # runner `daily-tests` uses, so the committed baselines match what CI's
 # Chromium actually renders. Screenshots taken on a different OS (e.g. a
 # contributor's Windows/macOS machine) render fonts differently and would
@@ -21,7 +21,8 @@ on:
 
 jobs:
   update-baselines:
-    runs-on: ubuntu-latest
+    # Must match daily-tests.yml -- see the note there.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
 
