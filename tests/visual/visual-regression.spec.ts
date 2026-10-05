@@ -5,7 +5,7 @@
 // visual-regression.spec.ts-snapshots/; every later run compares against
 // them and fails on unexpected UI drift.
 //
-// Baselines must be generated on the same ubuntu-latest runner CI uses, NOT
+// Baselines must be generated on the same ubuntu-24.04 runner CI uses, NOT
 // on a local dev machine — font rendering differs enough between OSes to
 // make cross-platform screenshots useless. To (re)generate baselines after
 // an intentional UI change, run the "Update Visual Regression Baselines"
