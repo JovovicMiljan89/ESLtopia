@@ -2,7 +2,7 @@ name: Daily Playwright Tests
 
 on:
   schedule:
-    - cron: '0 13 * * *'
+    - cron: '17 13 * * *'
   workflow_dispatch:
 
 permissions:

@@ -2,7 +2,7 @@ name: Daily Registration Report
 
 on:
   schedule:
-    - cron: '0 9 * * *'
+    - cron: '17 9 * * *'
   workflow_dispatch:
 
 jobs:
