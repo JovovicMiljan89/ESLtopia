@@ -9,7 +9,7 @@
 // The guard_profile_columns_trg trigger blocks changes to role/status/school_id
 // for regular users — first_name, last_name, middle_name and email are free to update.
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 import {
   createConfirmedUser,
   getAccessToken,

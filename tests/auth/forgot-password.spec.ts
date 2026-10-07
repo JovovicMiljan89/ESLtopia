@@ -13,7 +13,7 @@
 // We assert the UI flow only and don't read Mailtrap here, to avoid mailbox
 // contention with the registration spec under parallel runs.
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 import { createConfirmedUser, uniqueEmail } from '../helpers/cleanup';
 
 const PASSWORD = 'Test1234!';

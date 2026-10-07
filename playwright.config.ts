@@ -21,7 +21,11 @@ export default defineConfig({
     // Tests run against the deployed production site by default.
     // Override with BASE_URL=... to target a preview or local build.
     baseURL: process.env.BASE_URL ?? 'https://esltopia.vercel.app',
-    trace: 'on-first-retry',
+    // Keep evidence from the attempt that actually failed. 'on-first-retry'
+    // only traced the retry, which for a flaky test is the attempt that
+    // passed -- so the daily report never showed why a test had flaked.
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
   },
 
   projects: [

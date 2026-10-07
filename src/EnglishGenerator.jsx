@@ -127,17 +127,23 @@ export default function EnglishGenerator() {
     (async () => {
       const { data: cls } = await supabase.from('classes').select('*').order('created_at');
       const loadedClasses = (cls || []).map(c => ({ ...c, students: c.students || [] }));
-      setClasses(loadedClasses);
 
       const ids = loadedClasses.map(c => c.id);
+      let map = null;
       if (ids.length > 0) {
         const { data: recs } = await supabase.from('records').select('*').in('class_id', ids);
         if (recs) {
-          const map = {};
+          map = {};
           recs.forEach(r => { map[r.class_id] = r.data || {}; });
-          setRecords(map);
         }
       }
+      // Publish classes and their records in the same render. Showing the
+      // classes first let a teacher edit a record while the records fetch was
+      // still in flight; its result then replaced the whole map, dropping the
+      // edit from the screen (and the debounced sync, built from an empty
+      // record, could overwrite what was already saved).
+      setClasses(loadedClasses);
+      if (map) setRecords(map);
       setLoaded(true);
     })();
   }, [currentUser?.id]);

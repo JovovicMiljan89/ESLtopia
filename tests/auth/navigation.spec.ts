@@ -8,7 +8,7 @@
 //   * A session belonging to a deactivated account is signed out on reload
 //     (the app calls signOut when getSession returns a pending/inactive profile)
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 import { createConfirmedUser, getProfile, setProfileStatus, uniqueEmail } from '../helpers/cleanup';
 import { loginToApp } from '../helpers/ui';
 

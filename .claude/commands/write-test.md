@@ -13,6 +13,7 @@ Write a new Playwright E2E spec for the english-app project based on the user's 
 - **Config**: `playwright.config.ts` — tests run against `https://esltopia.vercel.app` (or `$BASE_URL`), Chromium only, `fullyParallel: true`, global teardown purges `@example.test` users
 - **Shared helpers**:
   - `tests/helpers/cleanup.ts` — `createConfirmedUser`, `getProfile`, `confirmUser`, `setProfileStatus`, `setProfileRole`, `setProfileSchoolId`, `getAccessToken`, `generateRecoveryLink`, `deleteTestUsers`, `uniqueEmail`
+  - `tests/helpers/fixtures.ts` — the `test` / `expect` every spec imports (its `page` waits for web fonts after `goto`/`reload`, so clicks aren't lost to the font-swap reflow)
   - `tests/helpers/ui.ts` — `loginToApp(page, email, password)` (logs in and clicks "Get started")
   - `tests/helpers/edgeFunctions.ts` — `invokeEdgeFunction(request, fn, token, payload)` for calling Supabase Edge Functions
 
@@ -27,7 +28,8 @@ Write a new Playwright E2E spec for the english-app project based on the user's 
 7. **No fixture state shared between describe blocks** — each describe block sets up its own users.
 8. **Edge function tests** use `invokeEdgeFunction(request, fn, token, payload)` from `../helpers/edgeFunctions` rather than Playwright's `page`.
 9. **No comments explaining what the code does** — only add comments for non-obvious WHY (e.g., why we use the admin API instead of the UI).
-10. **Retries**: add `test.describe.configure({ retries: 2 })` only when the test involves external SMTP (invite emails, registration confirmation).
+10. **Import `test` and `expect` from `../helpers/fixtures`**, never straight from `@playwright/test` (types such as `Page` still come from `@playwright/test`).
+11. **Retries**: add `test.describe.configure({ retries: 2 })` only when the test involves external SMTP (invite emails, registration confirmation).
 
 ## Selector conventions
 

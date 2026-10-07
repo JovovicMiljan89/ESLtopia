@@ -17,7 +17,7 @@
 // unknown role to 'teacher'. Test users are created as teachers and promoted
 // via setProfileRole (service-role client, exempt from the column guard).
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 import {
   createConfirmedUser,
   getProfile,

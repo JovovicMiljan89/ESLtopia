@@ -8,7 +8,8 @@
 // reading an email — race-free under parallel runs and doesn't depend on inbox
 // state. Each test uses its own user. Users are removed by the global teardown.
 
-import { test, expect, type Page } from '@playwright/test';
+import { type Page } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 import { createConfirmedUser, generateRecoveryLink, uniqueEmail } from '../helpers/cleanup';
 
 const OLD_PASSWORD = 'OldPass123!';

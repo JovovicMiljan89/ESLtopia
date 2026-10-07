@@ -14,7 +14,8 @@
 // block, because the suite runs fullyParallel and shared mutable fixtures
 // would race — same convention as tests/app/records.spec.ts.
 
-import { test, expect, type Page } from '@playwright/test';
+import { type Page } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 import { createConfirmedUser, getAccessToken, getProfile, uniqueEmail } from '../helpers/cleanup';
 import { loginToApp } from '../helpers/ui';
 

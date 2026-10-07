@@ -10,7 +10,7 @@
 // Until then they are skipped. After deploying, enable them by setting
 // FEATURE_SCHOOL_TEACHERS=1 in .env.test.local and run `npm test`.
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 import {
   createConfirmedUser,
   getAccessToken,

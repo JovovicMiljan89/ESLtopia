@@ -67,7 +67,10 @@ jobs:
 
   deploy-report:
     needs: test-and-report
-    if: always()
+    # Only main may deploy to the github-pages environment. On any other
+    # branch this job was rejected by the environment's branch policy and
+    # turned a manual run red even though every test had passed.
+    if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     permissions:
       pages: write
