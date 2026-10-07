@@ -8,7 +8,7 @@
 // API: POST /auth/v1/logout — verifies 204 response and that the revoked
 // token is rejected on subsequent requests.
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 import { createConfirmedUser, getAccessToken, uniqueEmail } from '../helpers/cleanup';
 import { loginToApp } from '../helpers/ui';
 

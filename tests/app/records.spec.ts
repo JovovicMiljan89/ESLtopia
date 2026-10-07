@@ -15,7 +15,8 @@
 // tests wait out the debounce and then reload the page to confirm the data
 // was actually written, not just held in local React state.
 
-import { test, expect, type Page } from '@playwright/test';
+import { type Page } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 import { createConfirmedUser, getAccessToken, getProfile, uniqueEmail } from '../helpers/cleanup';
 import { loginToApp } from '../helpers/ui';
 
@@ -236,6 +237,38 @@ test.describe('Records tab: attendance, grades, and payment', () => {
 
     await page.locator('.student-link', { hasText: 'Marko Jovic' }).click();
     await expect(page.locator('.notes-area')).toHaveValue('Great progress this term.');
+  });
+
+  // Regression test for the cause of this file's CI flakes ("Expected 1,
+  // Received 0" on the profile stat, "0 / 2" on the paid summary). The app used
+  // to list classes before their records had loaded, so an edit made in that
+  // window was wiped when the records response replaced the whole map. Holding
+  // the response back makes the window wide enough to hit every time.
+  test('an edit made while records are still loading is not wiped when they arrive', async ({ page }) => {
+    const className = uniqueClassName('Slow records');
+    await createTestClass(token, teacherId, className, ['Marko Jovic']);
+
+    let recordsDelivered = false;
+    await page.route('**/rest/v1/records*', async (route) => {
+      if (route.request().method() !== 'GET') return route.continue();
+      // Fetch now so the server answers with the pre-edit state, deliver late.
+      const response = await route.fetch();
+      await new Promise((resolve) => setTimeout(resolve, 2_000));
+      await route.fulfill({ response });
+      recordsDelivered = true;
+    });
+
+    await loginToApp(page, teacherEmail, PASSWORD);
+    await openRecordsTab(page, className);
+
+    const row = page.locator('.records-table tbody tr', { hasText: 'Marko Jovic' });
+    await row.getByRole('button', { name: 'Absent' }).click();
+    await expect(row.getByRole('button', { name: 'Present' })).toBeVisible();
+
+    await expect.poll(() => recordsDelivered, { timeout: 10_000 }).toBe(true);
+    await expect(row.getByRole('button', { name: 'Present' })).toBeVisible();
+    await page.locator('.student-link', { hasText: 'Marko Jovic' }).click();
+    await expect(page.locator('.profile-stat.stat-present .profile-stat-value')).toHaveText('1');
   });
 
   // XSS/HTML-injection resilience gap flagged in docs/qa/test-coverage-todo.md:

@@ -13,7 +13,7 @@
 // secondary — so assertions on `.answer-key` etc. must expect that both
 // sections render their own copy, not exactly one.
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 import { createConfirmedUser, uniqueEmail } from '../helpers/cleanup';
 import { loginToApp } from '../helpers/ui';
 

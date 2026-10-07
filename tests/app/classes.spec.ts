@@ -12,7 +12,7 @@
 // Cleanup:  test users use @example.test — global teardown purges them, which
 //           cascade-deletes all their classes and records automatically.
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 import {
   createConfirmedUser,
   getAccessToken,

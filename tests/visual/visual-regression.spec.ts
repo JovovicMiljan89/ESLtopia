@@ -24,7 +24,8 @@
 // need regenerating via the workflow above before this file will pass again,
 // this fix only gets the tests interacting with the right elements.
 
-import { test, expect, type Page } from '@playwright/test';
+import { type Page } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 import { createConfirmedUser, uniqueEmail } from '../helpers/cleanup';
 import { loginToApp } from '../helpers/ui';
 
@@ -36,6 +37,25 @@ test.use({ viewport: { width: 1280, height: 900 } });
 // A small tolerance absorbs the residual anti-aliasing noise that can differ
 // even between identical Docker images run on different host CPUs.
 const SCREENSHOT_OPTS = { maxDiffPixelRatio: 0.02 } as const;
+
+// Worksheet content is drawn with Math.random() (shuffle() in
+// WorksheetTasks.jsx), so every generated worksheet has different sentences
+// in a different order. Unseeded, the PDF modal differed from its baseline by
+// a random amount that sometimes crossed maxDiffPixelRatio -- a flake, not a
+// regression. Call this right before generating so the content is identical
+// on every run. Changing the seed (or the generator) needs new baselines.
+async function seedRandom(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    let state = 0x2f6e2b1;
+    // mulberry32
+    Math.random = () => {
+      state = (state + 0x6d2b79f5) | 0;
+      let t = Math.imul(state ^ (state >>> 15), 1 | state);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  });
+}
 
 async function freshDashboard(page: Page): Promise<void> {
   const email = uniqueEmail('visual-dashboard');
@@ -66,6 +86,7 @@ test('PDF preview modal', async ({ page }) => {
   await freshDashboard(page);
   await page.getByRole('button', { name: /^Grade 4/ }).click();
   await page.locator('.topic-card', { hasText: 'Am/is/are' }).click();
+  await seedRandom(page);
   await page.getByRole('button', { name: /generate worksheet/i }).click();
   await expect(page.locator('.pdf-modal-card')).toBeVisible();
   await expect(page.locator('.pdf-modal-card')).toHaveScreenshot('pdf-modal.png', SCREENSHOT_OPTS);

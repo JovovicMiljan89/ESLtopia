@@ -8,7 +8,7 @@
 //
 // Fixture users are created via the admin API and removed by the global teardown.
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 import { createConfirmedUser, getAccessToken, getProfile, setProfileStatus, uniqueEmail } from '../helpers/cleanup';
 import { loginToApp } from '../helpers/ui';
 

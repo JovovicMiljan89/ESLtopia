@@ -7,7 +7,8 @@
 // role), so these tests don't depend on the email-confirmation flow.
 // Users are cleaned up by the global teardown (all @example.test users).
 
-import { test, expect, type Page } from '@playwright/test';
+import { type Page } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 import { createConfirmedUser, postAuthToken, uniqueEmail } from '../helpers/cleanup';
 
 const PASSWORD = 'Test1234!';

@@ -9,7 +9,7 @@
 // Confirmation is done via the admin API — simulating the user clicking the
 // email link, so the test works regardless of which SMTP provider production uses.
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 import { confirmUser, createConfirmedUser, getProfile, uniqueEmail } from '../helpers/cleanup';
 
 // Signup still sends a confirmation email synchronously, which can be
