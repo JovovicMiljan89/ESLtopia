@@ -107,7 +107,7 @@ FEATURE_SCHOOL_TEACHERS=1
 
 ## Test coverage
 
-**144 automated test cases across 15 spec files**, run against the live production app — not a local mock:
+**143 automated test cases across 15 spec files** (307 test runs per day across three browsers), run against the live production app — not a local mock:
 
 - **Cross-browser**: Chromium, Firefox, and WebKit, wired into CI and runnable individually (`npm run test:chromium` / `test:cross-browser`)
 - **Security-first**: RLS/privilege-escalation coverage for every role boundary and table — cross-teacher data isolation on read *and* write (forged `owner_id` on insert), self-promotion to superadmin blocked, cascade deletes verified end-to-end
@@ -168,8 +168,8 @@ Database/edge-function changes are deployed separately via the Supabase CLI (`su
 
 GitHub Actions runs two scheduled workflows:
 
-- **daily-tests** — full Playwright suite (Chromium, Firefox, WebKit) against production every day at 13:00 UTC
-- **daily-registrations** — new-user report emailed every day at 09:00 UTC
+- **daily-tests** — full Playwright suite (Chromium, Firefox, WebKit) against production every day at 13:17 UTC
+- **daily-registrations** — new-user report emailed every day at 09:17 UTC
 
 ## License
 
