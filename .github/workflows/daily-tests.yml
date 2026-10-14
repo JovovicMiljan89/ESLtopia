@@ -2,7 +2,9 @@ name: Daily Playwright Tests
 
 on:
   schedule:
-    - cron: '17 13 * * *'
+    # 12:00 Europe/Belgrade during summer time (CEST, UTC+2). GitHub cron is
+    # UTC-only, so this lands at 11:00 local while CET (UTC+1) is in effect.
+    - cron: '0 10 * * *'
   workflow_dispatch:
 
 permissions:
