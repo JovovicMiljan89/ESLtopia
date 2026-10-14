@@ -68,6 +68,11 @@ test.describe('admin portal access', () => {
 // unconditionally. The pending-teacher case was previously gated by
 // FEATURE_SCHOOL_TEACHERS; it lives here so it always runs.
 
+// AuthScreen shows the status error *before* awaiting supabase.auth.signOut(),
+// and the button reads "Signing in…" until that network call returns. On a
+// slow CI run it outlasted the default 5s expect timeout.
+const SIGN_OUT_TIMEOUT = 15_000;
+
 test.describe('account status: login restrictions', () => {
   test.describe.configure({ retries: 2 });
   const pendingEmail = uniqueEmail('status-pending');
@@ -91,7 +96,7 @@ test.describe('account status: login restrictions', () => {
     await expect(
       page.getByText('Your account is pending. Check your email to set your password.'),
     ).toBeVisible({ timeout: 25_000 });
-    await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible({ timeout: SIGN_OUT_TIMEOUT });
   });
 
   test('inactive account cannot log in → "Your account has been deactivated…"', async ({ page }) => {
@@ -103,7 +108,7 @@ test.describe('account status: login restrictions', () => {
     await expect(
       page.getByText('Your account has been deactivated. Contact your school administrator.'),
     ).toBeVisible({ timeout: 25_000 });
-    await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible({ timeout: SIGN_OUT_TIMEOUT });
   });
 });
 
