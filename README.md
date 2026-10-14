@@ -168,7 +168,7 @@ Database/edge-function changes are deployed separately via the Supabase CLI (`su
 
 GitHub Actions runs two scheduled workflows:
 
-- **daily-tests** — full Playwright suite (Chromium, Firefox, WebKit) against production every day at 13:17 UTC
+- **daily-tests** — full Playwright suite (Chromium, Firefox, WebKit) against production every day at 10:00 UTC (12:00 Belgrade summer time)
 - **daily-registrations** — new-user report emailed every day at 09:17 UTC
 
 ## License
