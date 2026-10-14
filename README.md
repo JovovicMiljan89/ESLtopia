@@ -166,9 +166,9 @@ Database/edge-function changes are deployed separately via the Supabase CLI (`su
 
 ## CI
 
-GitHub Actions runs two scheduled workflows:
+GitHub Actions runs two daily workflows:
 
-- **daily-tests** — full Playwright suite (Chromium, Firefox, WebKit) against production every day at 10:00 UTC (12:00 Belgrade summer time)
+- **daily-tests** — full Playwright suite (Chromium, Firefox, WebKit) against production every day at 12:00 Europe/Belgrade. A [cron-job.org](https://cron-job.org) job triggers it through the `workflow_dispatch` API, since GitHub starts scheduled runs hours late. The workflow's own 17:00 UTC schedule is a backup that skips itself if main already had a run that day. The trigger uses a fine-grained token (Actions: read and write on this repo only); when it expires, cron-job.org reports HTTP 401 and the token needs regenerating.
 - **daily-registrations** — new-user report emailed every day at 09:17 UTC
 
 ## License
