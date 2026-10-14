@@ -12,8 +12,10 @@
 //
 // Record writes are synced to Supabase on an 800ms debounce (syncRecord in
 // EnglishGenerator.jsx) with no visible "saved" indicator, so persistence
-// tests wait out the debounce and then reload the page to confirm the data
-// was actually written, not just held in local React state.
+// tests wait for the upsert carrying the edit to be acknowledged (see
+// waitForRecordSave) and then reload the page to confirm the data was
+// actually written, not just held in local React state. A fixed sleep used to
+// stand in for that wait and flaked whenever the round-trip ran slow.
 
 import { type Page } from '@playwright/test';
 import { test, expect } from '../helpers/fixtures';
@@ -42,6 +44,27 @@ async function createTestClass(token: string, ownerId: string, name: string, stu
   });
   if (!res.ok) throw new Error(`createTestClass failed: HTTP ${res.status}`);
   return id;
+}
+
+// Resolves once Supabase has acknowledged a records upsert for `classId` whose
+// payload satisfies `saved`. Matching on content (not just "the next POST")
+// matters because an earlier edit's debounced write may still be in flight.
+// Must be called before the edit that triggers the write.
+// `data` is the untyped records.data JSON blob.
+function waitForRecordSave(page: Page, classId: string, saved: (data: any) => boolean) {
+  return page.waitForResponse((res) => {
+    const req = res.request();
+    if (req.method() !== 'POST' || !req.url().includes('/rest/v1/records')) return false;
+    const body = req.postDataJSON();
+    const row = Array.isArray(body) ? body[0] : body;
+    return row?.class_id === classId && saved(row.data ?? {}) && res.ok();
+  }, { timeout: 15_000 });
+}
+
+// True when any date/month bucket in a records section (grades, payment, ...)
+// holds `value` for `student`.
+function hasStudentValue(section: Record<string, Record<string, unknown>> | undefined, student: string, value: unknown) {
+  return Object.values(section ?? {}).some((bucket) => bucket?.[student] === value);
 }
 
 async function openRecordsTab(page: Page, className: string) {
@@ -131,15 +154,16 @@ test.describe('Records tab: attendance, grades, and payment', () => {
 
   test('a grade set on a student persists across a reload', async ({ page }) => {
     const className = uniqueClassName('Grade persists');
-    await createTestClass(token, teacherId, className, ['Ana Ilic', 'Marko Jovic']);
+    const classId = await createTestClass(token, teacherId, className, ['Ana Ilic', 'Marko Jovic']);
 
     await loginToApp(page, teacherEmail, PASSWORD);
     await openRecordsTab(page, className);
 
     const row = page.locator('.records-table tbody tr', { hasText: 'Marko Jovic' });
+    const saved = waitForRecordSave(page, classId, (d) => hasStudentValue(d.grades, 'Marko Jovic', '5'));
     await row.locator('select.grade-select').selectOption('5');
 
-    await page.waitForTimeout(1_500); // let the 800ms debounced sync finish
+    await saved;
     await reloadIntoRecordsTab(page, className);
 
     const rowAfterReload = page.locator('.records-table tbody tr', { hasText: 'Marko Jovic' });
@@ -148,19 +172,20 @@ test.describe('Records tab: attendance, grades, and payment', () => {
 
   test('marking a student paid updates the summary and persists across a reload', async ({ page }) => {
     const className = uniqueClassName('Payment persists');
-    await createTestClass(token, teacherId, className, ['Ana Ilic', 'Marko Jovic']);
+    const classId = await createTestClass(token, teacherId, className, ['Ana Ilic', 'Marko Jovic']);
 
     await loginToApp(page, teacherEmail, PASSWORD);
     await openRecordsTab(page, className);
 
     const row = page.locator('.records-table tbody tr', { hasText: 'Ana Ilic' });
+    const saved = waitForRecordSave(page, classId, (d) => hasStudentValue(d.payment, 'Ana Ilic', true));
     await row.getByRole('button', { name: 'Not paid' }).click();
     await expect(row.getByRole('button', { name: 'Paid' })).toBeVisible();
     await expect(
       page.locator('.pay-summary-item', { hasText: 'Paid (' }).locator('.pay-summary-value'),
     ).toHaveText('1 / 2');
 
-    await page.waitForTimeout(1_500);
+    await saved;
     await reloadIntoRecordsTab(page, className);
 
     const rowAfterReload = page.locator('.records-table tbody tr', { hasText: 'Ana Ilic' });
@@ -218,7 +243,7 @@ test.describe('Records tab: attendance, grades, and payment', () => {
 
   test('opening a student profile shows their attendance stats and saves a note', async ({ page }) => {
     const className = uniqueClassName('Student profile');
-    await createTestClass(token, teacherId, className, ['Marko Jovic']);
+    const classId = await createTestClass(token, teacherId, className, ['Marko Jovic']);
 
     await loginToApp(page, teacherEmail, PASSWORD);
     await openRecordsTab(page, className);
@@ -231,8 +256,10 @@ test.describe('Records tab: attendance, grades, and payment', () => {
     await expect(page.locator('.modal-name')).toHaveText('Marko Jovic');
     await expect(page.locator('.profile-stat.stat-present .profile-stat-value')).toHaveText('1');
 
-    await page.locator('.notes-area').fill('Great progress this term.');
-    await page.waitForTimeout(1_500);
+    const note = 'Great progress this term.';
+    const saved = waitForRecordSave(page, classId, (d) => d.notes?.['Marko Jovic'] === note);
+    await page.locator('.notes-area').fill(note);
+    await saved;
     await reloadIntoRecordsTab(page, className);
 
     await page.locator('.student-link', { hasText: 'Marko Jovic' }).click();
@@ -277,15 +304,16 @@ test.describe('Records tab: attendance, grades, and payment', () => {
   // redisplays markup as literal text rather than, say, stripping or mangling it.
   test('a note containing HTML markup is stored and redisplayed as literal text', async ({ page }) => {
     const className = uniqueClassName('XSS note');
-    await createTestClass(token, teacherId, className, ['Ana Ilic']);
+    const classId = await createTestClass(token, teacherId, className, ['Ana Ilic']);
     const payload = '<b>bold</b> <script>window.__xssFired = true;</script>';
 
     await loginToApp(page, teacherEmail, PASSWORD);
     await openRecordsTab(page, className);
 
     await page.locator('.student-link', { hasText: 'Ana Ilic' }).click();
+    const saved = waitForRecordSave(page, classId, (d) => d.notes?.['Ana Ilic'] === payload);
     await page.locator('.notes-area').fill(payload);
-    await page.waitForTimeout(1_500);
+    await saved;
     await reloadIntoRecordsTab(page, className);
 
     await page.locator('.student-link', { hasText: 'Ana Ilic' }).click();
